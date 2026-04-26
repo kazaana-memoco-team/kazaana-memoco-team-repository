@@ -1,5 +1,5 @@
 import {Suspense} from 'react';
-import {Await, NavLink} from 'react-router';
+import {Await, Link, NavLink} from 'react-router';
 import type {FooterQuery, HeaderQuery} from 'storefrontapi.generated';
 
 interface FooterProps {
@@ -18,13 +18,36 @@ export function Footer({
       <Await resolve={footerPromise}>
         {(footer) => (
           <footer className="footer">
-            {footer?.menu && header.shop.primaryDomain?.url && (
-              <FooterMenu
-                menu={footer.menu}
-                primaryDomainUrl={header.shop.primaryDomain.url}
-                publicStoreDomain={publicStoreDomain}
-              />
-            )}
+            <div className="footer-inner">
+              <div className="footer-brand">kazaana × thebecos</div>
+              <div className="footer-tagline">
+                日本の伝統工芸品を 30%OFF の特別価格でお届けする会員サイト
+              </div>
+              <div className="footer-links">
+                <Link to="/">ホーム</Link>
+                <Link to="/collections">カテゴリ</Link>
+                <Link to="/collections/all">商品一覧</Link>
+                <Link to="/account">アカウント</Link>
+                <a
+                  href="https://www.thebecos.com/"
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  thebecos.com（本家サイト）↗
+                </a>
+              </div>
+              {footer?.menu && header.shop.primaryDomain?.url && (
+                <FooterMenu
+                  menu={footer.menu}
+                  primaryDomainUrl={header.shop.primaryDomain.url}
+                  publicStoreDomain={publicStoreDomain}
+                />
+              )}
+              <div className="footer-meta">
+                © {new Date().getFullYear()} kazaana × BECOS — Powered by
+                Shopify Hydrogen / Oxygen
+              </div>
+            </div>
           </footer>
         )}
       </Await>

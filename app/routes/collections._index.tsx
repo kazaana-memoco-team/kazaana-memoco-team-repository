@@ -87,16 +87,20 @@ function CollectionItem({
       to={`/collections/${collection.handle}`}
       prefetch="intent"
     >
-      {collection?.image && (
-        <Image
-          alt={collection.image.altText || collection.title}
-          aspectRatio="1/1"
-          data={collection.image}
-          loading={index < 3 ? 'eager' : undefined}
-          sizes="(min-width: 45em) 400px, 100vw"
-        />
-      )}
-      <h5>{collection.title}</h5>
+      <div className="collection-item-thumb">
+        {collection?.image ? (
+          <Image
+            alt={collection.image.altText || collection.title}
+            aspectRatio="1/1"
+            data={collection.image}
+            loading={index < 3 ? 'eager' : undefined}
+            sizes="(min-width: 45em) 400px, 100vw"
+          />
+        ) : (
+          <span className="collection-item-fallback">{collection.title}</span>
+        )}
+      </div>
+      <h5 className="collection-item-title">{collection.title}</h5>
     </Link>
   );
 }
