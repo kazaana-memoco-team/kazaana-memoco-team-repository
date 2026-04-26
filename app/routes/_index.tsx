@@ -138,47 +138,29 @@ function FeaturedCategories({
         <Await resolve={collections}>
           {(response) =>
             response?.collections?.nodes?.length ? (
-              <div
-                style={{
-                  display: 'grid',
-                  gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))',
-                  gap: '16px',
-                }}
-              >
+              <div className="collections-grid">
                 {response.collections.nodes.slice(0, 6).map((collection) => (
                   <Link
                     key={collection.id}
                     to={`/collections/${collection.handle}`}
-                    style={{
-                      textDecoration: 'none',
-                      color: 'inherit',
-                      display: 'block',
-                    }}
+                    className="collection-item"
                     prefetch="intent"
                   >
-                    {collection.image ? (
-                      <Image
-                        data={collection.image}
-                        aspectRatio="1/1"
-                        sizes="(min-width: 45em) 200px, 50vw"
-                        alt={collection.image.altText || collection.title}
-                      />
-                    ) : (
-                      <div
-                        style={{
-                          aspectRatio: '1/1',
-                          background: '#222',
-                          color: '#fff',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          fontSize: '14px',
-                        }}
-                      >
-                        {collection.title}
-                      </div>
-                    )}
-                    <h5 style={{margin: '8px 0 0', fontSize: '14px'}}>
+                    <div className="collection-item-thumb">
+                      {collection.image ? (
+                        <Image
+                          data={collection.image}
+                          aspectRatio="1/1"
+                          sizes="(min-width: 45em) 200px, 50vw"
+                          alt={collection.image.altText || collection.title}
+                        />
+                      ) : (
+                        <span className="collection-item-fallback">
+                          {collection.title}
+                        </span>
+                      )}
+                    </div>
+                    <h5 className="collection-item-title">
                       {collection.title}
                     </h5>
                   </Link>

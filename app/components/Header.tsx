@@ -23,14 +23,15 @@ export function Header({
   cart,
   publicStoreDomain,
 }: HeaderProps) {
-  const {shop, menu} = header;
+  // thebecos の Online Store メニューは使わず、kazaana 用の固定メニューを採用
   return (
     <header className="header">
-      <NavLink prefetch="intent" to="/" style={activeLinkStyle} end>
-        <strong>{shop.name}</strong>
+      <NavLink prefetch="intent" to="/" className="header-brand" end>
+        <span className="header-brand-name">kazaana × thebecos</span>
+        <span className="header-brand-tagline">伝統工芸品 30%OFF 会員サイト</span>
       </NavLink>
       <HeaderMenu
-        menu={menu}
+        menu={null}
         viewport="desktop"
         primaryDomainUrl={header.shop.primaryDomain.url}
         publicStoreDomain={publicStoreDomain}
@@ -176,42 +177,24 @@ function CartBanner() {
 }
 
 const FALLBACK_HEADER_MENU = {
-  id: 'gid://shopify/Menu/199655587896',
+  id: 'gid://shopify/Menu/kazaana-default',
   items: [
     {
-      id: 'gid://shopify/MenuItem/461609500728',
+      id: 'kazaana-menu-categories',
       resourceId: null,
       tags: [],
-      title: 'Collections',
+      title: 'カテゴリ',
       type: 'HTTP',
       url: '/collections',
       items: [],
     },
     {
-      id: 'gid://shopify/MenuItem/461609533496',
+      id: 'kazaana-menu-all',
       resourceId: null,
       tags: [],
-      title: 'Blog',
+      title: '商品一覧',
       type: 'HTTP',
-      url: '/blogs/journal',
-      items: [],
-    },
-    {
-      id: 'gid://shopify/MenuItem/461609566264',
-      resourceId: null,
-      tags: [],
-      title: 'Policies',
-      type: 'HTTP',
-      url: '/policies',
-      items: [],
-    },
-    {
-      id: 'gid://shopify/MenuItem/461609599032',
-      resourceId: 'gid://shopify/Page/92591030328',
-      tags: [],
-      title: 'About',
-      type: 'PAGE',
-      url: '/pages/about',
+      url: '/collections/all',
       items: [],
     },
   ],
