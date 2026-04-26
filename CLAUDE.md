@@ -73,6 +73,50 @@ gh pr merge --auto --squash
 - 大きな改修を始める前にチームへ一声かけ、並行作業の重複を避ける
 - WIP でも構わないので、まず PR を draft で立てて作業の存在を可視化することを推奨
 
+## 必須 4: 破壊的可能性のある CLI を既存リポで実行する前に保険を張る
+
+`npm create *`, `*-init`, `*-create`, `yarn create *`, `bunx create-*`, `npx degit`, `cookiecutter` 等の **scaffold/initializer 系コマンド**は、内部で **`git init` を再実行したり既存ファイルを上書き・削除したり**する可能性があります。何の保険もなく既存リポで実行すると、`.git` 履歴の消失・既存ファイルの上書き・remote 設定の喪失といった事故が起こります（実際 2026-04 に Hydrogen scaffolder で発生済）。
+
+### Why (scaffold safety)
+
+- scaffolder は「空ディレクトリで動く」前提で書かれているものが多く、既存リポを尊重しない
+- ローカルで履歴が飛んでも、リモートへ push 済みなら復旧できる（最後の防波堤）
+- タグを打っておけば、scaffolder が orphan commit を作っても安全に拾い直せる
+
+### How to apply (scaffold safety)
+
+scaffold 系コマンドを既存リポで実行する場合、**必ず以下を事前に**:
+
+```bash
+# 1. すべての変更を origin に push 済みであることを確認
+git status              # working tree clean
+git push origin main    # ahead 0 / behind 0
+
+# 2. 直前のコミットにバックアップタグを打つ（必要に応じて）
+git tag pre-scaffold-$(date +%Y%m%d-%H%M%S)
+git push origin --tags
+
+# 3. 可能なら一度 別ディレクトリで scaffold して中身を確認、
+#    問題なければ既存リポにコピーする方が安全
+mkdir /tmp/scaffold-test && cd /tmp/scaffold-test
+npm create <whatever>@latest -- --path .
+# → 中身を確認 → 既存リポに rsync などで移植
+```
+
+scaffold が `.git` を吹き飛ばした場合の復旧:
+
+```bash
+git remote add origin <url>           # remote 再登録
+git fetch origin                       # 元の履歴を取り戻す
+git tag scaffold-snapshot HEAD         # 念のため scaffold を保全
+git checkout -b feature/<name> origin/main  # 元 main から feature を切る
+git checkout scaffold-snapshot -- .    # scaffold を上書きで合流
+git add -A && git commit -m "..."
+git branch -f main origin/main         # local main も巻き戻す
+```
+
+Claude Code に scaffold 系コマンドの実行を依頼する場合も、上記の保険手順をセットで実行してもらうこと。
+
 ## デプロイ
 
 main にマージされた変更は GitHub Actions ([.github/workflows/deploy.yml](.github/workflows/deploy.yml)) によって自動的に GitHub Pages へデプロイされます。**追加の手動デプロイ作業は不要**です。
