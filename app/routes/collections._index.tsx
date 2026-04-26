@@ -10,7 +10,7 @@ export const meta: Route.MetaFunction = () => {
 
 export async function loader(args: Route.LoaderArgs) {
   const {requireAuth} = await import('~/lib/auth');
-  await requireAuth(args.context.session, args.context.env);
+  await requireAuth(args.request, args.context.env);
 
   // Start fetching non-critical data without blocking time to first byte
   const deferredData = loadDeferredData(args);
