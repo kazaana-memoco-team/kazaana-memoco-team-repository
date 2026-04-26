@@ -52,3 +52,31 @@ gh pr merge --auto --squash
 - PR タイトルは変更内容が一目で分かる簡潔なものにする
 - `--squash` を基本とし、コミット履歴を main 上で綺麗に保つ
 - Claude Code に作業を依頼する場合も、PR 作成・auto-merge 設定までを 1 セットとして実行する
+
+## 必須 3: 短命ブランチ + 高頻度マージで main へどんどん統合する
+
+複数人が並行作業するため、ブランチが長期化すると即座にコンフリクト地獄になります。**1 PR = 1 つの小さな変更**を原則に、可能な限り早く main へ統合してください。Trunk-Based Development を志向します。
+
+### Why (rapid merge)
+
+- 多人数が同時に main へ変更を入れる前提では、長命ブランチほど rebase コストが膨らむ
+- 小さな PR ほどレビュー負荷が軽く、auto-merge が早く成立する
+- 機能ごとに細切れに統合することで、問題発生時のロールバック粒度が細かくなる
+- 「他の人が main を進めてくれているはず」を前提に協調できる文化を作る
+
+### How to apply (rapid merge)
+
+- ブランチは原則 **当日中（できれば数時間以内）にマージ** することを目標に切る
+- 1 つの PR が 300 行を超えそうなら分割を検討する
+- 作業中も `git pull --rebase origin main` で頻繁に main を取り込む（最低でも作業再開時は必須）
+- 競合は早期発見・即解決。長く放置しない
+- 大きな改修を始める前にチームへ一声かけ、並行作業の重複を避ける
+- WIP でも構わないので、まず PR を draft で立てて作業の存在を可視化することを推奨
+
+## デプロイ
+
+main にマージされた変更は GitHub Actions ([.github/workflows/deploy.yml](.github/workflows/deploy.yml)) によって自動的に GitHub Pages へデプロイされます。**追加の手動デプロイ作業は不要**です。
+
+- デプロイ URL: GitHub の `Settings → Pages` で確認
+- main へのマージ = 即本番反映 という前提のため、PR レビュー時はその意識を持つこと
+- Workflow の動作状況は [Actions タブ](../../actions) で確認できる
