@@ -6,10 +6,6 @@ import type {MoneyV2} from '@shopify/hydrogen/storefront-api-types';
 
 export const DEFAULT_DISCOUNT = 0.7;
 
-// カートに自動付与する会員割引コード
-// Shopify Admin → Discounts で "KAZAANA30"（30%OFF・全商品対象）を事前作成しておくこと
-export const MEMBER_DISCOUNT_CODE = 'KAZAANA30';
-
 export const PRICE_OVERRIDES: Record<string, number> = {
   // "s0111-462": 1980,
 };

@@ -3,7 +3,6 @@ import type {Route} from './+types/cart';
 import type {CartQueryDataReturn} from '@shopify/hydrogen';
 import {CartForm} from '@shopify/hydrogen';
 import {CartMain} from '~/components/CartMain';
-import {MEMBER_DISCOUNT_CODE} from '~/lib/pricing';
 
 export const meta: Route.MetaFunction = () => {
   return [{title: `Hydrogen | Cart`}];
@@ -26,22 +25,9 @@ export async function action({request, context}: Route.ActionArgs) {
   let result: CartQueryDataReturn;
 
   switch (action) {
-    case CartForm.ACTIONS.LinesAdd: {
+    case CartForm.ACTIONS.LinesAdd:
       result = await cart.addLines(inputs.lines);
-      // 会員割引コードが未適用なら自動付与
-      const alreadyApplied = result.cart.discountCodes?.some(
-        (d) => d.code.toUpperCase() === MEMBER_DISCOUNT_CODE,
-      );
-      if (!alreadyApplied) {
-        const existingCodes =
-          result.cart.discountCodes?.map((d) => d.code) ?? [];
-        result = await cart.updateDiscountCodes([
-          ...existingCodes,
-          MEMBER_DISCOUNT_CODE,
-        ]);
-      }
       break;
-    }
     case CartForm.ACTIONS.LinesUpdate:
       result = await cart.updateLines(inputs.lines);
       break;
