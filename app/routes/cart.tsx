@@ -10,9 +10,9 @@ export const meta: Route.MetaFunction = () => {
 
 export const headers: HeadersFunction = ({actionHeaders}) => actionHeaders;
 
-export async function loader({context}: Route.LoaderArgs) {
+export async function loader({request, context}: Route.LoaderArgs) {
   const {requireAuth} = await import('~/lib/auth');
-  await requireAuth(context.session, context.env);
+  await requireAuth(request, context.env);
   return await context.cart.get();
 }
 

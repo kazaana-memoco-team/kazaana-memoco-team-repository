@@ -1,15 +1,17 @@
-import {data, redirect, Form, useActionData, useNavigation} from 'react-router';
+import {redirect, useLoaderData} from 'react-router';
 import type {Route} from './+types/login';
 import {signIn, getAuthUser} from '~/lib/auth';
+import {buildLoginHeaders} from '~/lib/auth-cookie';
 
 export const meta: Route.MetaFunction = () => [
   {title: 'ログイン | 会員制BECOS'},
 ];
 
-export async function loader({context}: Route.LoaderArgs) {
-  const user = await getAuthUser(context.session, context.env);
-  if (user) throw redirect('/products');
-  return null;
+export async function loader({request, context}: Route.LoaderArgs) {
+  const user = await getAuthUser(request, context.env);
+  if (user) throw redirect('/');
+  const url = new URL(request.url);
+  return {error: url.searchParams.get('error')};
 }
 
 export async function action({request, context}: Route.ActionArgs) {
@@ -18,24 +20,23 @@ export async function action({request, context}: Route.ActionArgs) {
   const password = String(formData.get('password') ?? '');
 
   if (!email || !password) {
-    return data({error: 'メールアドレスとパスワードを入力してください'}, {status: 400});
+    return redirect('/login?error=' + encodeURIComponent('メールアドレスとパスワードを入力してください'));
   }
 
-  const result = await signIn(email, password, context.session, context.env);
+  const result = await signIn(email, password, context.env);
 
   if (result.error) {
-    return data({error: result.error}, {status: 401});
+    return redirect('/login?error=' + encodeURIComponent(result.error));
   }
 
-  const headers = new Headers();
-  headers.set('Set-Cookie', await context.session.commit());
-  return redirect('/products', {headers});
+  return new Response(null, {
+    status: 302,
+    headers: buildLoginHeaders(result.accessToken!, result.refreshToken!),
+  });
 }
 
 export default function LoginPage() {
-  const actionData = useActionData<typeof action>();
-  const navigation = useNavigation();
-  const isSubmitting = navigation.state === 'submitting';
+  const {error} = useLoaderData<typeof loader>();
 
   return (
     <div className="login-page">
@@ -45,10 +46,8 @@ export default function LoginPage() {
           <p>福利厚生サービス</p>
         </div>
 
-        <Form method="post" className="login-form">
-          {actionData?.error && (
-            <div className="login-error">{actionData.error}</div>
-          )}
+        <form method="post" className="login-form">
+          {error && <div className="login-error">{error}</div>}
 
           <div className="form-group">
             <label htmlFor="email">メールアドレス</label>
@@ -74,10 +73,10 @@ export default function LoginPage() {
             />
           </div>
 
-          <button type="submit" disabled={isSubmitting} className="login-button">
-            {isSubmitting ? 'ログイン中...' : 'ログイン'}
+          <button type="submit" className="login-button">
+            ログイン
           </button>
-        </Form>
+        </form>
 
         <p className="login-note">
           アカウントをお持ちでない方は、管理者からの招待メールをご確認ください。

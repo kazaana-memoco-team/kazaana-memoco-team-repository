@@ -1,12 +1,9 @@
 import {redirect} from 'react-router';
 import type {Route} from './+types/logout';
-import {signOut} from '~/lib/auth';
+import {buildLogoutHeaders} from '~/lib/auth-cookie';
 
-export async function action({context}: Route.ActionArgs) {
-  await signOut(context.session, context.env);
-  const headers = new Headers();
-  headers.set('Set-Cookie', await context.session.commit());
-  return redirect('/login', {headers});
+export async function action(_: Route.ActionArgs) {
+  return new Response(null, {status: 302, headers: buildLogoutHeaders()});
 }
 
 export async function loader() {
