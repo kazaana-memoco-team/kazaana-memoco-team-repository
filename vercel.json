@@ -3,5 +3,12 @@
   "framework": null,
   "buildCommand": "true",
   "installCommand": "true",
-  "outputDirectory": "public"
+  "outputDirectory": "public",
+  "redirects": [
+    {
+      "source": "/(.*)",
+      "destination": "https://xn--becos-b0ec320ffe10bebbf598-yr75b2z1c5vr.o2.myshopify.dev/$1",
+      "permanent": false
+    }
+  ]
 }
