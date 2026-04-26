@@ -1,16 +1,12 @@
 import {Await, useLoaderData, Link} from 'react-router';
 import type {Route} from './+types/_index';
 import {Suspense} from 'react';
-import {Image} from '@shopify/hydrogen';
-import type {
-  FeaturedCollectionFragment,
-  RecommendedProductsQuery,
-} from 'storefrontapi.generated';
+import type {RecommendedProductsQuery} from 'storefrontapi.generated';
 import {ProductItem} from '~/components/ProductItem';
 import {MockShopNotice} from '~/components/MockShopNotice';
 
 export const meta: Route.MetaFunction = () => {
-  return [{title: 'Hydrogen | Home'}];
+  return [{title: 'こんにちは！ | kazaana × thebecos'}];
 };
 
 export async function loader(args: Route.LoaderArgs) {
@@ -28,14 +24,8 @@ export async function loader(args: Route.LoaderArgs) {
  * needed to render the page. If it's unavailable, the whole page should 400 or 500 error.
  */
 async function loadCriticalData({context}: Route.LoaderArgs) {
-  const [{collections}] = await Promise.all([
-    context.storefront.query(FEATURED_COLLECTION_QUERY),
-    // Add other queries here, so that they are loaded in parallel
-  ]);
-
   return {
     isShopLinked: Boolean(context.env.PUBLIC_STORE_DOMAIN),
-    featuredCollection: collections.nodes[0],
   };
 }
 
@@ -63,35 +53,46 @@ export default function Homepage() {
   return (
     <div className="home">
       {data.isShopLinked ? null : <MockShopNotice />}
-      <FeaturedCollection collection={data.featuredCollection} />
+      <Hero />
       <RecommendedProducts products={data.recommendedProducts} />
     </div>
   );
 }
 
-function FeaturedCollection({
-  collection,
-}: {
-  collection: FeaturedCollectionFragment;
-}) {
-  if (!collection) return null;
-  const image = collection?.image;
+function Hero() {
   return (
-    <Link
-      className="featured-collection"
-      to={`/collections/${collection.handle}`}
+    <section
+      style={{
+        padding: '80px 24px',
+        textAlign: 'center',
+        background: '#000',
+        color: '#fff',
+        borderRadius: '12px',
+        marginBottom: '32px',
+      }}
     >
-      {image && (
-        <div className="featured-collection-image">
-          <Image
-            data={image}
-            sizes="100vw"
-            alt={image.altText || collection.title}
-          />
-        </div>
-      )}
-      <h1>{collection.title}</h1>
-    </Link>
+      <h1 style={{fontSize: '56px', margin: 0, letterSpacing: '0.05em'}}>
+        こんにちは！
+      </h1>
+      <p style={{margin: '20px 0 36px', fontSize: '18px', opacity: 0.85}}>
+        伝統工芸品を<strong>30%OFF</strong>の特別価格で。
+      </p>
+      <Link
+        to="/collections/all"
+        style={{
+          display: 'inline-block',
+          padding: '14px 36px',
+          background: '#fff',
+          color: '#000',
+          textDecoration: 'none',
+          borderRadius: '6px',
+          fontWeight: 'bold',
+          fontSize: '16px',
+        }}
+      >
+        商品一覧を見る →
+      </Link>
+    </section>
   );
 }
 
@@ -123,29 +124,6 @@ function RecommendedProducts({
     </section>
   );
 }
-
-const FEATURED_COLLECTION_QUERY = `#graphql
-  fragment FeaturedCollection on Collection {
-    id
-    title
-    image {
-      id
-      url
-      altText
-      width
-      height
-    }
-    handle
-  }
-  query FeaturedCollection($country: CountryCode, $language: LanguageCode)
-    @inContext(country: $country, language: $language) {
-    collections(first: 1, sortKey: UPDATED_AT, reverse: true) {
-      nodes {
-        ...FeaturedCollection
-      }
-    }
-  }
-` as const;
 
 const RECOMMENDED_PRODUCTS_QUERY = `#graphql
   fragment RecommendedProduct on Product {

@@ -105,6 +105,7 @@ export default function Product() {
         <ProductPrice
           price={selectedVariant?.price}
           compareAtPrice={selectedVariant?.compareAtPrice}
+          handle={product.handle}
         />
         <br />
         <ProductForm

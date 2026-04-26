@@ -1,11 +1,12 @@
 import {Link} from 'react-router';
-import {Image, Money} from '@shopify/hydrogen';
+import {Image} from '@shopify/hydrogen';
 import type {
   ProductItemFragment,
   CollectionItemFragment,
   RecommendedProductFragment,
 } from 'storefrontapi.generated';
 import {useVariantUrl} from '~/lib/variants';
+import {ProductPrice} from '~/components/ProductPrice';
 
 export function ProductItem({
   product,
@@ -37,7 +38,10 @@ export function ProductItem({
       )}
       <h4>{product.title}</h4>
       <small>
-        <Money data={product.priceRange.minVariantPrice} />
+        <ProductPrice
+          price={product.priceRange.minVariantPrice}
+          handle={product.handle}
+        />
       </small>
     </Link>
   );
