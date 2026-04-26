@@ -10,6 +10,12 @@ export const meta: Route.MetaFunction = () => {
 
 export const headers: HeadersFunction = ({actionHeaders}) => actionHeaders;
 
+export async function loader({context}: Route.LoaderArgs) {
+  const {requireAuth} = await import('~/lib/auth');
+  await requireAuth(context.session, context.env);
+  return await context.cart.get();
+}
+
 export async function action({request, context}: Route.ActionArgs) {
   const {cart} = context;
 
@@ -96,10 +102,6 @@ export async function action({request, context}: Route.ActionArgs) {
   );
 }
 
-export async function loader({context}: Route.LoaderArgs) {
-  const {cart} = context;
-  return await cart.get();
-}
 
 export default function Cart() {
   const cart = useLoaderData<typeof loader>();
