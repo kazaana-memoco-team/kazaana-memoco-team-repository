@@ -4,6 +4,10 @@ import {getPaginationVariables, Image} from '@shopify/hydrogen';
 import type {CollectionFragment} from 'storefrontapi.generated';
 import {PaginatedResourceSection} from '~/components/PaginatedResourceSection';
 
+export const meta: Route.MetaFunction = () => {
+  return [{title: 'カテゴリ一覧 | kazaana × thebecos'}];
+};
+
 export async function loader(args: Route.LoaderArgs) {
   // Start fetching non-critical data without blocking time to first byte
   const deferredData = loadDeferredData(args);
@@ -20,7 +24,7 @@ export async function loader(args: Route.LoaderArgs) {
  */
 async function loadCriticalData({context, request}: Route.LoaderArgs) {
   const paginationVariables = getPaginationVariables(request, {
-    pageBy: 4,
+    pageBy: 12,
   });
 
   const [{collections}] = await Promise.all([
@@ -47,7 +51,12 @@ export default function Collections() {
 
   return (
     <div className="collections">
-      <h1>Collections</h1>
+      <header style={{marginBottom: '24px'}}>
+        <h1 style={{margin: '0 0 8px'}}>カテゴリから探す</h1>
+        <p style={{margin: 0, opacity: 0.7}}>
+          食器・暮らしの道具・ファッションなど、伝統工芸品をカテゴリで絞り込めます。すべて<strong>30%OFF</strong>。
+        </p>
+      </header>
       <PaginatedResourceSection<CollectionFragment>
         connection={collections}
         resourcesClassName="collections-grid"

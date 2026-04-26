@@ -1,7 +1,11 @@
 import {Await, useLoaderData, Link} from 'react-router';
 import type {Route} from './+types/_index';
 import {Suspense} from 'react';
-import type {RecommendedProductsQuery} from 'storefrontapi.generated';
+import {Image} from '@shopify/hydrogen';
+import type {
+  HomeCollectionsQuery,
+  RecommendedProductsQuery,
+} from 'storefrontapi.generated';
 import {ProductItem} from '~/components/ProductItem';
 import {MockShopNotice} from '~/components/MockShopNotice';
 
@@ -43,8 +47,16 @@ function loadDeferredData({context}: Route.LoaderArgs) {
       return null;
     });
 
+  const homeCollections = context.storefront
+    .query(HOME_COLLECTIONS_QUERY)
+    .catch((error: Error) => {
+      console.error(error);
+      return null;
+    });
+
   return {
     recommendedProducts,
+    homeCollections,
   };
 }
 
@@ -54,6 +66,7 @@ export default function Homepage() {
     <div className="home">
       {data.isShopLinked ? null : <MockShopNotice />}
       <Hero />
+      <FeaturedCategories collections={data.homeCollections} />
       <RecommendedProducts products={data.recommendedProducts} />
     </div>
   );
@@ -96,6 +109,89 @@ function Hero() {
   );
 }
 
+function FeaturedCategories({
+  collections,
+}: {
+  collections: Promise<HomeCollectionsQuery | null>;
+}) {
+  return (
+    <section
+      aria-labelledby="featured-categories"
+      style={{marginBottom: '48px'}}
+    >
+      <header
+        style={{
+          display: 'flex',
+          alignItems: 'baseline',
+          justifyContent: 'space-between',
+          marginBottom: '16px',
+        }}
+      >
+        <h2 id="featured-categories" style={{margin: 0}}>
+          カテゴリから探す
+        </h2>
+        <Link to="/collections" style={{fontSize: '14px'}}>
+          すべて見る →
+        </Link>
+      </header>
+      <Suspense fallback={<div>Loading...</div>}>
+        <Await resolve={collections}>
+          {(response) =>
+            response?.collections?.nodes?.length ? (
+              <div
+                style={{
+                  display: 'grid',
+                  gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))',
+                  gap: '16px',
+                }}
+              >
+                {response.collections.nodes.slice(0, 6).map((collection) => (
+                  <Link
+                    key={collection.id}
+                    to={`/collections/${collection.handle}`}
+                    style={{
+                      textDecoration: 'none',
+                      color: 'inherit',
+                      display: 'block',
+                    }}
+                    prefetch="intent"
+                  >
+                    {collection.image ? (
+                      <Image
+                        data={collection.image}
+                        aspectRatio="1/1"
+                        sizes="(min-width: 45em) 200px, 50vw"
+                        alt={collection.image.altText || collection.title}
+                      />
+                    ) : (
+                      <div
+                        style={{
+                          aspectRatio: '1/1',
+                          background: '#222',
+                          color: '#fff',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          fontSize: '14px',
+                        }}
+                      >
+                        {collection.title}
+                      </div>
+                    )}
+                    <h5 style={{margin: '8px 0 0', fontSize: '14px'}}>
+                      {collection.title}
+                    </h5>
+                  </Link>
+                ))}
+              </div>
+            ) : null
+          }
+        </Await>
+      </Suspense>
+    </section>
+  );
+}
+
 function RecommendedProducts({
   products,
 }: {
@@ -124,6 +220,29 @@ function RecommendedProducts({
     </section>
   );
 }
+
+const HOME_COLLECTIONS_QUERY = `#graphql
+  fragment HomeCollection on Collection {
+    id
+    title
+    handle
+    image {
+      id
+      url
+      altText
+      width
+      height
+    }
+  }
+  query HomeCollections($country: CountryCode, $language: LanguageCode)
+    @inContext(country: $country, language: $language) {
+    collections(first: 12, sortKey: UPDATED_AT, reverse: true) {
+      nodes {
+        ...HomeCollection
+      }
+    }
+  }
+` as const;
 
 const RECOMMENDED_PRODUCTS_QUERY = `#graphql
   fragment RecommendedProduct on Product {
