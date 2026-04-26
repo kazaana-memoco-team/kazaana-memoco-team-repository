@@ -1,5 +1,9 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
+  "framework": null,
+  "buildCommand": "mkdir -p public && [ -f public/index.html ] || echo '<!DOCTYPE html><meta charset=utf-8><title>Disabled</title>Vercel deploys are disabled. See Oxygen.' > public/index.html",
+  "installCommand": "echo 'skipped'",
+  "outputDirectory": "public",
   "git": {
     "deploymentEnabled": false
   }
