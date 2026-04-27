@@ -14,5 +14,6 @@ declare global {
     SUPABASE_SERVICE_ROLE_KEY: string;
     SHOPIFY_ADMIN_ACCESS_TOKEN: string;
     SHOPIFY_STORE_DOMAIN: string;
+    SHOPIFY_WEBHOOK_SECRET: string;
   }
 }
