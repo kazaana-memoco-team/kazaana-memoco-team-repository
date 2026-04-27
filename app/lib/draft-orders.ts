@@ -41,10 +41,15 @@ export async function createDraftOrder(
       {amount: item.regularPrice, currencyCode: item.currencyCode},
       item.productHandle,
     );
+    const discountAmount = Number(item.regularPrice) - Number(memberPrice.amount);
     return {
       variant_id: toNumericId(item.variantGid),
       quantity: item.quantity,
-      price: formatPrice(memberPrice.amount, item.currencyCode),
+      applied_discount: {
+        value_type: 'fixed_amount',
+        value: formatPrice(String(discountAmount), item.currencyCode),
+        title: '会員割引',
+      },
     };
   });
 
