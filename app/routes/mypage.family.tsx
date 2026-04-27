@@ -33,9 +33,13 @@ export async function action({request, context}: Route.ActionArgs): Promise<Acti
     if (!relationship) return {error: '続柄を入力してください'};
     if (kinshipDegree < 1 || kinshipDegree > 2) return {error: '2親等以内の家族のみ招待できます'};
 
+    const origin = new URL(request.url).origin;
     const {data: inviteData, error: inviteError} = await supabase.auth.admin.inviteUserByEmail(
       email,
-      {data: {role: 'family_member', parent_user_id: user.id}},
+      {
+        data: {role: 'family_member', parent_user_id: user.id},
+        redirectTo: `${origin}/auth/confirm`,
+      },
     );
     if (inviteError) return {error: inviteError.message};
 
