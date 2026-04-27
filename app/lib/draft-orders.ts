@@ -14,9 +14,16 @@ function toNumericId(gid: string): number {
   return Number(gid.split('/').pop());
 }
 
-/** 金額を Draft Orders API 用の文字列にフォーマット */
-function formatPrice(amount: string): string {
-  return Number(amount).toFixed(2);
+/**
+ * 金額を Draft Orders API 用の文字列にフォーマット
+ * JPY は小数点なし整数、他は小数2桁
+ */
+function formatPrice(amount: string, currencyCode: CurrencyCode): string {
+  const zeroDecimalCurrencies = ['JPY', 'KRW', 'VND', 'IDR', 'ISK'];
+  const num = Number(amount);
+  return zeroDecimalCurrencies.includes(currencyCode as string)
+    ? String(Math.round(num))
+    : num.toFixed(2);
 }
 
 /**
@@ -37,13 +44,15 @@ export async function createDraftOrder(
     return {
       variant_id: toNumericId(item.variantGid),
       quantity: item.quantity,
-      price: formatPrice(memberPrice.amount),
+      price: formatPrice(memberPrice.amount, item.currencyCode),
     };
   });
 
   const noteLines = ['会員制BECOSサイト経由の注文'];
   if (meta?.userId) noteLines.push(`会員ID: ${meta.userId}`);
   if (meta?.companyName) noteLines.push(`企業: ${meta.companyName}`);
+
+  console.log('[DraftOrder] line_items:', JSON.stringify(draftLineItems));
 
   const response = await fetch(
     `https://${domain}/admin/api/2024-01/draft_orders.json`,
