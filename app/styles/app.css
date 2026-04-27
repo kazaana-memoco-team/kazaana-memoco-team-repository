@@ -853,3 +853,169 @@ button.reset:hover:not(:has(> *)) {
   gap: 0.75rem;
   flex-wrap: wrap;
 }
+
+/* ============================================================
+   会員価格バッジ（ProductPrice）
+   ============================================================ */
+.price-badge {
+  display: inline-block;
+  background: #c00;
+  color: #fff;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  padding: 0.15rem 0.45rem;
+  border-radius: 3px;
+  letter-spacing: 0.02em;
+  vertical-align: middle;
+}
+
+.product-price-on-sale {
+  align-items: baseline;
+  gap: 0.4rem;
+}
+
+.product-price-on-sale s {
+  opacity: 0.4;
+  font-size: 0.85em;
+}
+
+/* ============================================================
+   管理・会員ページ共通（白ベース）
+   ============================================================ */
+.admin-page  { max-width: 1000px; margin: 2rem auto; padding: 0 1rem; }
+.mypage-page { max-width: 860px;  margin: 2rem auto; padding: 0 1rem; }
+
+.page-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 1.5rem;
+}
+.page-heading h1 { margin: 0; }
+
+/* 統計カード */
+.stat-cards { display: flex; gap: 1.25rem; margin-bottom: 2rem; flex-wrap: wrap; }
+.stat-card {
+  padding: 1.25rem 1.5rem;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  min-width: 110px;
+  background: #fff;
+}
+.stat-card dt { font-size: 0.75rem; color: #6b7280; margin-bottom: 0.25rem; }
+.stat-card dd { font-size: 1.875rem; font-weight: 700; margin: 0; }
+
+/* セクションボックス */
+.admin-section {
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 1.25rem 1.5rem;
+  margin-bottom: 1.5rem;
+}
+.admin-section h2 { margin: 0 0 1rem; font-size: 1rem; font-weight: 600; }
+
+/* テーブル */
+.admin-table { width: 100%; border-collapse: collapse; font-size: 0.875rem; }
+.admin-table th {
+  padding: 0.5rem 0.75rem;
+  font-weight: 600;
+  text-align: left;
+  border-bottom: 2px solid #111;
+}
+.admin-table td {
+  padding: 0.75rem;
+  border-bottom: 1px solid #f3f4f6;
+  vertical-align: middle;
+}
+
+/* フォーム */
+.form-row { display: flex; gap: 0.5rem; align-items: flex-end; flex-wrap: wrap; }
+.form-group label {
+  display: block;
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: #374151;
+  margin-bottom: 0.25rem;
+}
+.form-input {
+  padding: 0.5rem 0.75rem;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  font-size: 0.875rem;
+}
+
+/* ボタン */
+.btn-primary {
+  padding: 0.5rem 1.25rem;
+  background: #111;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+.btn-primary:hover:not(:disabled) { background: #333; }
+.btn-primary:disabled { opacity: 0.5; cursor: default; }
+
+.btn-sm {
+  padding: 0.3rem 0.75rem;
+  border: 1px solid #d1d5db;
+  border-radius: 5px;
+  cursor: pointer;
+  background: #f9fafb;
+  font-size: 0.8125rem;
+  color: #374151;
+}
+.btn-sm.btn-danger {
+  background: #dc2626;
+  color: #fff;
+  border-color: #dc2626;
+}
+
+/* バッジ */
+.badge {
+  display: inline-block;
+  padding: 0.2rem 0.6rem;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+.badge-active  { background: #d1fae5; color: #065f46; }
+.badge-pending { background: #fef3c7; color: #92400e; }
+
+/* フィードバックテキスト */
+.msg-error   { color: #dc2626; font-size: 0.875rem; margin: 0.5rem 0 0; }
+.msg-success { color: #16a34a; font-size: 0.875rem; margin: 0.5rem 0 0; }
+.msg-sm { font-size: 0.8rem; margin: 0.25rem 0 0; }
+
+/* 注文カード（/mypage） */
+.order-card {
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 1rem 1.25rem;
+  margin-bottom: 0.75rem;
+  background: #fff;
+}
+.order-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.75rem;
+}
+.order-prices { display: flex; gap: 2rem; margin-bottom: 0.75rem; }
+.order-prices dt { font-size: 0.75rem; color: #6b7280; }
+.order-prices dd { margin: 0; font-weight: 600; }
+.order-savings { color: #16a34a; }
+
+/* ヘッダー追加ナビリンク */
+.header-nav-link {
+  color: rgba(255, 255, 255, 0.85);
+  font-size: 0.875rem;
+  text-decoration: none;
+  padding: 0.25rem 0;
+  white-space: nowrap;
+}
+.header-nav-link:hover { color: #fff; }
+.header-nav-link.active { color: #fff; font-weight: 600; }

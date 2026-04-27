@@ -28,16 +28,18 @@ export default function MypagePage() {
       : user.email;
 
   return (
-    <div style={{maxWidth: 860, margin: '2rem auto', padding: '0 1rem'}}>
-      <h1 style={{marginBottom: '0.25rem'}}>マイページ</h1>
-      <p style={{color: '#666', marginBottom: '2rem'}}>{fullName} 様</p>
+    <div className="mypage-page">
+      <div className="page-heading">
+        <h1>マイページ</h1>
+        <span style={{color: '#666', fontSize: '0.875rem'}}>{fullName} 様</span>
+      </div>
 
       <h2>購入履歴</h2>
 
       {orders.length === 0 ? (
         <p style={{color: '#666'}}>まだ購入履歴がありません。</p>
       ) : (
-        <div style={{display: 'flex', flexDirection: 'column', gap: '1rem'}}>
+        <div>
           {orders.map((order) => (
             <OrderCard key={order.id} order={order} />
           ))}
@@ -46,6 +48,12 @@ export default function MypagePage() {
     </div>
   );
 }
+
+const STATUS_LABEL: Record<string, string> = {
+  paid: '決済済み',
+  pending: '処理中',
+  refunded: '返金済み',
+};
 
 function OrderCard({order}: {order: Record<string, any>}) {
   const date = new Date(order.created_at).toLocaleDateString('ja-JP', {
@@ -59,75 +67,33 @@ function OrderCard({order}: {order: Record<string, any>}) {
       : null;
 
   return (
-    <div
-      style={{
-        border: '1px solid #e0e0e0',
-        borderRadius: 8,
-        padding: '1rem 1.25rem',
-      }}
-    >
-      <div
-        style={{
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'baseline',
-          marginBottom: '0.75rem',
-        }}
-      >
+    <div className="order-card">
+      <div className="order-card-header">
         <span style={{fontSize: '0.875rem', color: '#666'}}>{date}</span>
-        <span
-          style={{
-            fontSize: '0.75rem',
-            padding: '0.2rem 0.6rem',
-            background: '#f0fdf4',
-            color: '#16a34a',
-            borderRadius: 12,
-          }}
-        >
+        <span className="badge badge-active">
           {STATUS_LABEL[order.status] ?? order.status}
         </span>
       </div>
 
-      <dl
-        style={{
-          display: 'flex',
-          gap: '2rem',
-          margin: '0 0 0.75rem',
-        }}
-      >
+      <dl className="order-prices">
         <div>
-          <dt style={{fontSize: '0.75rem', color: '#666'}}>通常価格</dt>
-          <dd style={{margin: 0}}>
-            <s style={{color: '#aaa'}}>
-              ¥{order.total_regular_price?.toLocaleString('ja-JP') ?? '-'}
-            </s>
-          </dd>
+          <dt>通常価格</dt>
+          <dd><s style={{color: '#aaa'}}>¥{order.total_regular_price?.toLocaleString('ja-JP') ?? '-'}</s></dd>
         </div>
         <div>
-          <dt style={{fontSize: '0.75rem', color: '#666'}}>会員価格</dt>
-          <dd style={{margin: 0, fontWeight: 600}}>
-            ¥{order.total_member_price?.toLocaleString('ja-JP') ?? '-'}
-          </dd>
+          <dt>会員価格</dt>
+          <dd>¥{order.total_member_price?.toLocaleString('ja-JP') ?? '-'}</dd>
         </div>
         {savings != null && savings > 0 && (
           <div>
-            <dt style={{fontSize: '0.75rem', color: '#666'}}>割引額</dt>
-            <dd style={{margin: 0, color: '#16a34a', fontWeight: 600}}>
-              -¥{savings.toLocaleString('ja-JP')}
-            </dd>
+            <dt>割引額</dt>
+            <dd className="order-savings">-¥{savings.toLocaleString('ja-JP')}</dd>
           </div>
         )}
       </dl>
 
       {order.order_items?.length > 0 && (
-        <ul
-          style={{
-            margin: 0,
-            paddingLeft: '1rem',
-            fontSize: '0.875rem',
-            color: '#444',
-          }}
-        >
+        <ul style={{margin: 0, paddingLeft: '1rem', fontSize: '0.875rem', color: '#444'}}>
           {order.order_items.map((item: Record<string, any>) => (
             <li key={item.id}>
               数量 {item.quantity} ×{' '}
@@ -141,9 +107,3 @@ function OrderCard({order}: {order: Record<string, any>}) {
     </div>
   );
 }
-
-const STATUS_LABEL: Record<string, string> = {
-  paid: '決済済み',
-  pending: '処理中',
-  refunded: '返金済み',
-};

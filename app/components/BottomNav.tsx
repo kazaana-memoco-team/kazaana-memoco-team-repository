@@ -6,9 +6,10 @@ import {useAside} from '~/components/Aside';
 
 interface BottomNavProps {
   cart: Promise<CartApiQueryFragment | null>;
+  userRole?: string | null;
 }
 
-export function BottomNav({cart}: BottomNavProps) {
+export function BottomNav({cart, userRole}: BottomNavProps) {
   const {open} = useAside();
   return (
     <nav className="bottom-nav" role="navigation" aria-label="Mobile navigation">
@@ -55,16 +56,17 @@ export function BottomNav({cart}: BottomNavProps) {
           </Suspense>
         </span>
       </button>
-      <NavLink
-        to="/account"
-        className="bottom-nav-item"
-        prefetch="intent"
-      >
-        <span className="bottom-nav-icon" aria-hidden>
-          ☻
-        </span>
-        <span className="bottom-nav-label">アカウント</span>
-      </NavLink>
+      {userRole ? (
+        <NavLink to="/mypage" className="bottom-nav-item" prefetch="intent">
+          <span className="bottom-nav-icon" aria-hidden>☻</span>
+          <span className="bottom-nav-label">マイページ</span>
+        </NavLink>
+      ) : (
+        <NavLink to="/login" className="bottom-nav-item" prefetch="intent">
+          <span className="bottom-nav-icon" aria-hidden>☻</span>
+          <span className="bottom-nav-label">ログイン</span>
+        </NavLink>
+      )}
     </nav>
   );
 }

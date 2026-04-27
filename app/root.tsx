@@ -74,9 +74,15 @@ export async function loader(args: Route.LoaderArgs) {
 
   const {storefront, env} = args.context;
 
+  const {getAuthUser} = await import('~/lib/auth');
+  const userRole = await getAuthUser(args.request, env)
+    .then((u) => u?.role ?? null)
+    .catch(() => null);
+
   return {
     ...deferredData,
     ...criticalData,
+    userRole,
     publicStoreDomain: env.PUBLIC_STORE_DOMAIN,
     shop: getShopAnalytics({
       storefront,

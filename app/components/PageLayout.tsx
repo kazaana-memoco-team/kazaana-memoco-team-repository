@@ -22,6 +22,7 @@ interface PageLayoutProps {
   header: HeaderQuery;
   isLoggedIn: Promise<boolean>;
   publicStoreDomain: string;
+  userRole?: string | null;
   children?: React.ReactNode;
 }
 
@@ -32,6 +33,7 @@ export function PageLayout({
   header,
   isLoggedIn,
   publicStoreDomain,
+  userRole,
 }: PageLayoutProps) {
   return (
     <Aside.Provider>
@@ -44,6 +46,7 @@ export function PageLayout({
           cart={cart}
           isLoggedIn={isLoggedIn}
           publicStoreDomain={publicStoreDomain}
+          userRole={userRole}
         />
       )}
       <main>{children}</main>
@@ -52,7 +55,7 @@ export function PageLayout({
         header={header}
         publicStoreDomain={publicStoreDomain}
       />
-      <BottomNav cart={cart} />
+      <BottomNav cart={cart} userRole={userRole} />
     </Aside.Provider>
   );
 }
