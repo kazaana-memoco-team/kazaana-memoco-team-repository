@@ -13,6 +13,7 @@ interface HeaderProps {
   cart: Promise<CartApiQueryFragment | null>;
   isLoggedIn: Promise<boolean>;
   publicStoreDomain: string;
+  userRole?: string | null;
 }
 
 type Viewport = 'desktop' | 'mobile';
@@ -22,6 +23,7 @@ export function Header({
   isLoggedIn,
   cart,
   publicStoreDomain,
+  userRole,
 }: HeaderProps) {
   // thebecos の Online Store メニューは使わず、kazaana 用の固定メニューを採用
   return (
@@ -36,7 +38,7 @@ export function Header({
         primaryDomainUrl={header.shop.primaryDomain.url}
         publicStoreDomain={publicStoreDomain}
       />
-      <HeaderCtas isLoggedIn={isLoggedIn} cart={cart} />
+      <HeaderCtas isLoggedIn={isLoggedIn} cart={cart} userRole={userRole} />
     </header>
   );
 }
@@ -99,17 +101,44 @@ export function HeaderMenu({
 function HeaderCtas({
   isLoggedIn,
   cart,
-}: Pick<HeaderProps, 'isLoggedIn' | 'cart'>) {
+  userRole,
+}: Pick<HeaderProps, 'isLoggedIn' | 'cart' | 'userRole'>) {
   return (
     <nav className="header-ctas" role="navigation">
       <HeaderMenuMobileToggle />
-      <NavLink prefetch="intent" to="/account" style={activeLinkStyle}>
-        <Suspense fallback="Sign in">
-          <Await resolve={isLoggedIn} errorElement="Sign in">
-            {(isLoggedIn) => (isLoggedIn ? 'Account' : 'Sign in')}
-          </Await>
-        </Suspense>
-      </NavLink>
+      {userRole && (
+        <NavLink
+          prefetch="intent"
+          to="/mypage"
+          className={({isActive}) =>
+            `header-nav-link${isActive ? ' active' : ''}`
+          }
+        >
+          マイページ
+        </NavLink>
+      )}
+      {(userRole === 'company_admin' || userRole === 'super_admin') && (
+        <NavLink
+          prefetch="intent"
+          to="/dashboard"
+          className={({isActive}) =>
+            `header-nav-link${isActive ? ' active' : ''}`
+          }
+        >
+          ダッシュボード
+        </NavLink>
+      )}
+      {userRole === 'super_admin' && (
+        <NavLink
+          prefetch="intent"
+          to="/admin"
+          className={({isActive}) =>
+            `header-nav-link${isActive ? ' active' : ''}`
+          }
+        >
+          管理
+        </NavLink>
+      )}
       <SearchToggle />
       <CartToggle cart={cart} />
     </nav>

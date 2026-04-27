@@ -16,10 +16,7 @@ export async function loader({request, context}: Route.LoaderArgs) {
       .select('id, company_id, role, status, parent_user_id')
       .neq('status', 'deleted')
       .in('role', ['member', 'company_admin']),
-    supabase
-      .from('orders')
-      .select('id, company_id')
-      .eq('status', 'paid'),
+    supabase.from('orders').select('id, company_id').eq('status', 'paid'),
   ]);
 
   const companyStats = (companies ?? []).map((c) => {
@@ -51,13 +48,8 @@ export async function action({
     if (!name) return {error: '企業名を入力してください'};
     const limitRaw = formData.get('member_limit');
     const memberLimit =
-      limitRaw && String(limitRaw).trim() !== ''
-        ? Number(limitRaw)
-        : null;
-
-    const {error} = await supabase
-      .from('companies')
-      .insert({name, member_limit: memberLimit});
+      limitRaw && String(limitRaw).trim() !== '' ? Number(limitRaw) : null;
+    const {error} = await supabase.from('companies').insert({name, member_limit: memberLimit});
     if (error) return {error: error.message};
     return {success: `「${name}」を追加しました`};
   }
@@ -66,10 +58,7 @@ export async function action({
     const id = String(formData.get('id') ?? '');
     const limitRaw = formData.get('member_limit');
     const memberLimit =
-      limitRaw && String(limitRaw).trim() !== ''
-        ? Number(limitRaw)
-        : null;
-
+      limitRaw && String(limitRaw).trim() !== '' ? Number(limitRaw) : null;
     const {error} = await supabase
       .from('companies')
       .update({member_limit: memberLimit})
@@ -80,11 +69,7 @@ export async function action({
 
   if (intent === 'delete') {
     const id = String(formData.get('id') ?? '');
-    // 所属ユーザーを inactive に
-    await supabase
-      .from('users')
-      .update({status: 'inactive'})
-      .eq('company_id', id);
+    await supabase.from('users').update({status: 'inactive'}).eq('company_id', id);
     const {error} = await supabase.from('companies').delete().eq('id', id);
     if (error) return {error: error.message};
     return {success: '企業を削除しました'};
@@ -102,78 +87,51 @@ export default function AdminPage() {
   const totalOrders = companyStats.reduce((s, c) => s + c.orderCount, 0);
 
   return (
-    <div style={{maxWidth: 1000, margin: '2rem auto', padding: '0 1rem'}}>
-      <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '1.5rem'}}>
-        <h1 style={{margin: 0}}>kazaana 運営管理</h1>
+    <div className="admin-page">
+      <div className="page-heading">
+        <h1>kazaana 運営管理</h1>
         <Link to="/admin/discounts" style={{fontSize: '0.875rem', color: '#2563eb'}}>
           商品別割引率の設定 →
         </Link>
       </div>
 
-      {/* 全社サマリー */}
-      <dl style={{display: 'flex', gap: '1.5rem', marginBottom: '2rem'}}>
-        <StatCard label="企業数" value={companyStats.length} />
-        <StatCard label="承認済み会員（合計）" value={totalActive} />
-        <StatCard label="招待中（合計）" value={totalPending} />
-        <StatCard label="購入件数（合計）" value={totalOrders} />
+      <dl className="stat-cards">
+        <div className="stat-card"><dt>企業数</dt><dd>{companyStats.length}</dd></div>
+        <div className="stat-card"><dt>承認済み会員（合計）</dt><dd>{totalActive}</dd></div>
+        <div className="stat-card"><dt>招待中（合計）</dt><dd>{totalPending}</dd></div>
+        <div className="stat-card"><dt>購入件数（合計）</dt><dd>{totalOrders}</dd></div>
       </dl>
 
-      {/* 企業追加フォーム */}
-      <section style={{marginBottom: '2rem', padding: '1rem 1.5rem', border: '1px solid #e0e0e0', borderRadius: 8}}>
-        <h2 style={{marginTop: 0}}>企業を追加</h2>
-        <addFetcher.Form method="post" style={{display: 'flex', gap: '0.5rem', alignItems: 'flex-end'}}>
+      <section className="admin-section">
+        <h2>企業を追加</h2>
+        <addFetcher.Form method="post" className="form-row">
           <input type="hidden" name="intent" value="add" />
-          <div>
-            <label style={{display: 'block', fontSize: '0.875rem', marginBottom: '0.25rem'}}>
-              企業名
-            </label>
-            <input
-              type="text"
-              name="name"
-              required
-              placeholder="株式会社〇〇"
-              style={{padding: '0.5rem', border: '1px solid #ccc', borderRadius: 4, width: 220}}
-            />
+          <div className="form-group">
+            <label>企業名</label>
+            <input type="text" name="name" required placeholder="株式会社〇〇" className="form-input" style={{width: 220}} />
           </div>
-          <div>
-            <label style={{display: 'block', fontSize: '0.875rem', marginBottom: '0.25rem'}}>
-              会員枠（空欄＝無制限）
-            </label>
-            <input
-              type="number"
-              name="member_limit"
-              min="1"
-              placeholder="例: 50"
-              style={{padding: '0.5rem', border: '1px solid #ccc', borderRadius: 4, width: 120}}
-            />
+          <div className="form-group">
+            <label>会員枠（空欄＝無制限）</label>
+            <input type="number" name="member_limit" min="1" placeholder="例: 50" className="form-input" style={{width: 120}} />
           </div>
-          <button
-            type="submit"
-            disabled={addFetcher.state !== 'idle'}
-            style={{padding: '0.5rem 1.25rem', background: '#222', color: '#fff', border: 'none', borderRadius: 4, cursor: 'pointer'}}
-          >
+          <button type="submit" disabled={addFetcher.state !== 'idle'} className="btn-primary">
             追加
           </button>
         </addFetcher.Form>
-        {addFetcher.data?.error && (
-          <p style={{color: '#dc2626', marginTop: '0.5rem', marginBottom: 0}}>{addFetcher.data.error}</p>
-        )}
-        {addFetcher.data?.success && (
-          <p style={{color: '#16a34a', marginTop: '0.5rem', marginBottom: 0}}>{addFetcher.data.success}</p>
-        )}
+        {addFetcher.data?.error && <p className="msg-error">{addFetcher.data.error}</p>}
+        {addFetcher.data?.success && <p className="msg-success">{addFetcher.data.success}</p>}
       </section>
 
-      {/* 企業一覧 */}
       <section>
         <h2>企業一覧</h2>
         {companyStats.length === 0 ? (
           <p style={{color: '#666'}}>企業が登録されていません。</p>
         ) : (
-          <table style={{width: '100%', borderCollapse: 'collapse'}}>
+          <table className="admin-table">
             <thead>
-              <tr style={{borderBottom: '2px solid #222', textAlign: 'left'}}>
+              <tr>
                 {['企業名', '承認済み', '招待中', '購入件数', '会員枠', '操作'].map((h) => (
-                  <th key={h} style={{padding: '0.5rem 0.75rem', fontWeight: 600}}>{h}</th>
+                  <th key={h}>{h}</th>
                 ))}
               </tr>
             </thead>
@@ -191,16 +149,14 @@ export default function AdminPage() {
 
 function CompanyRow({company}: {company: Record<string, any>}) {
   const fetcher = useFetcher<ActionData>();
-
   return (
-    <tr style={{borderBottom: '1px solid #e0e0e0'}}>
-      <td style={{padding: '0.75rem', fontWeight: 500}}>{company.name}</td>
-      <td style={{padding: '0.75rem'}}>{company.activeCount}</td>
-      <td style={{padding: '0.75rem'}}>{company.pendingCount}</td>
-      <td style={{padding: '0.75rem'}}>{company.orderCount}</td>
-      <td style={{padding: '0.75rem'}}>
-        {/* 会員枠インライン編集 */}
-        <fetcher.Form method="post" style={{display: 'flex', gap: '0.5rem', alignItems: 'center'}}>
+    <tr>
+      <td style={{fontWeight: 500}}>{company.name}</td>
+      <td>{company.activeCount}</td>
+      <td>{company.pendingCount}</td>
+      <td>{company.orderCount}</td>
+      <td>
+        <fetcher.Form method="post" className="form-row" style={{gap: '0.4rem'}}>
           <input type="hidden" name="intent" value="update_limit" />
           <input type="hidden" name="id" value={company.id} />
           <input
@@ -209,15 +165,16 @@ function CompanyRow({company}: {company: Record<string, any>}) {
             min="1"
             defaultValue={company.member_limit ?? ''}
             placeholder="無制限"
-            style={{width: 80, padding: '0.25rem 0.5rem', border: '1px solid #ccc', borderRadius: 4, fontSize: '0.875rem'}}
+            className="form-input"
+            style={{width: 80, fontSize: '0.875rem'}}
           />
-          <button type="submit" style={smallBtn}>更新</button>
+          <button type="submit" className="btn-sm">更新</button>
         </fetcher.Form>
         {fetcher.data?.success && fetcher.formData?.get('intent') === 'update_limit' && (
-          <span style={{fontSize: '0.75rem', color: '#16a34a'}}>✓</span>
+          <span className="msg-sm msg-success">✓</span>
         )}
       </td>
-      <td style={{padding: '0.75rem'}}>
+      <td>
         <fetcher.Form
           method="post"
           onSubmit={(e) => {
@@ -227,37 +184,10 @@ function CompanyRow({company}: {company: Record<string, any>}) {
         >
           <input type="hidden" name="intent" value="delete" />
           <input type="hidden" name="id" value={company.id} />
-          <button
-            type="submit"
-            style={{...smallBtn, background: '#dc2626', color: '#fff', borderColor: '#dc2626'}}
-          >
-            削除
-          </button>
+          <button type="submit" className="btn-sm btn-danger">削除</button>
         </fetcher.Form>
-        {fetcher.data?.error && (
-          <p style={{color: '#dc2626', fontSize: '0.75rem', marginTop: '0.25rem', marginBottom: 0}}>
-            {fetcher.data.error}
-          </p>
-        )}
+        {fetcher.data?.error && <p className="msg-error msg-sm">{fetcher.data.error}</p>}
       </td>
     </tr>
   );
 }
-
-function StatCard({label, value}: {label: string; value: number}) {
-  return (
-    <div style={{padding: '1rem 1.5rem', border: '1px solid #e0e0e0', borderRadius: 8, minWidth: 120}}>
-      <dt style={{fontSize: '0.8rem', color: '#666'}}>{label}</dt>
-      <dd style={{fontSize: '1.75rem', fontWeight: 'bold', margin: 0}}>{value}</dd>
-    </div>
-  );
-}
-
-const smallBtn: React.CSSProperties = {
-  padding: '0.25rem 0.75rem',
-  border: '1px solid #ccc',
-  borderRadius: 4,
-  cursor: 'pointer',
-  background: '#f5f5f5',
-  fontSize: '0.875rem',
-};
