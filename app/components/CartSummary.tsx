@@ -3,6 +3,7 @@ import type {CartLayout} from '~/components/CartMain';
 import {CartForm, Money, type OptimisticCart} from '@shopify/hydrogen';
 import {useEffect, useId, useRef, useState} from 'react';
 import {useFetcher} from 'react-router';
+import {applyDiscount} from '~/lib/pricing';
 
 type CartSummaryProps = {
   cart: OptimisticCart<CartApiQueryFragment | null>;
@@ -22,10 +23,33 @@ export function CartSummary({cart, layout}: CartSummaryProps) {
     <div aria-labelledby={summaryId} className={className}>
       <h4 id={summaryId}>Totals</h4>
       <dl role="group" className="cart-subtotal">
-        <dt>Subtotal</dt>
+        <dt>通常価格（小計）</dt>
         <dd>
           {cart?.cost?.subtotalAmount?.amount ? (
-            <Money data={cart?.cost?.subtotalAmount} />
+            <s><Money data={cart?.cost?.subtotalAmount} /></s>
+          ) : (
+            '-'
+          )}
+        </dd>
+      </dl>
+      <dl role="group" className="cart-subtotal">
+        <dt>会員価格（小計）</dt>
+        <dd>
+          {cart?.lines?.nodes?.length ? (
+            <Money
+              data={{
+                amount: String(
+                  cart.lines.nodes.reduce((sum, line: any) => {
+                    const memberPrice = applyDiscount(
+                      line.merchandise.price,
+                      line.merchandise.product?.handle,
+                    );
+                    return sum + Number(memberPrice.amount) * line.quantity;
+                  }, 0)
+                ),
+                currencyCode: cart.cost?.subtotalAmount?.currencyCode ?? 'JPY',
+              }}
+            />
           ) : (
             '-'
           )}
