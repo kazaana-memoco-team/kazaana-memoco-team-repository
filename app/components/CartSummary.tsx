@@ -51,9 +51,12 @@ function CartCheckoutActions({checkoutUrl}: {checkoutUrl?: string}) {
 
   return (
     <div>
-      <a href={checkoutUrl} target="_self">
-        <p>Continue to Checkout &rarr;</p>
-      </a>
+      {/* Draft Orders API で会員価格（30%OFF）を確定してチェックアウトへ */}
+      <form method="post" action="/api/checkout">
+        <button type="submit" className="checkout-button">
+          会員価格でチェックアウト &rarr;
+        </button>
+      </form>
       <br />
     </div>
   );
