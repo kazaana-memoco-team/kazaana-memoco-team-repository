@@ -37,9 +37,13 @@ export async function action({request, context}: Route.ActionArgs): Promise<Acti
   if (intent === 'invite') {
     const email = String(formData.get('email') ?? '').trim().toLowerCase();
     if (!email) return {error: 'メールアドレスを入力してください'};
+    const origin = new URL(request.url).origin;
     const {data: inviteData, error: inviteError} = await supabase.auth.admin.inviteUserByEmail(
       email,
-      {data: {company_id: user.company_id, role: 'member'}},
+      {
+        data: {company_id: user.company_id, role: 'member'},
+        redirectTo: `${origin}/auth/confirm`,
+      },
     );
     if (inviteError) return {error: inviteError.message};
     const {error: dbError} = await supabase.from('users').upsert(
