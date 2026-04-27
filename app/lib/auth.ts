@@ -23,6 +23,11 @@ export async function getAuthUser(request: Request, env: Env) {
 
   if (!userRow || userRow.status === 'deleted' || userRow.status === 'inactive') return null;
 
+  if (userRow.status === 'pending') {
+    await supabase.from('users').update({status: 'active'}).eq('id', user.id);
+    return {...userRow, status: 'active' as const};
+  }
+
   return userRow;
 }
 
