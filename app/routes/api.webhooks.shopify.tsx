@@ -25,6 +25,12 @@ export async function action({request, context}: Route.ActionArgs) {
     return handleFulfillment(rawBody, context.env);
   }
 
+  // アプリのスコープでは fulfillments/* トピックを購読できないため、
+  // 実運用は orders/fulfilled（注文オブジェクト＝タグ・fulfillments配列入り）を使う
+  if (topic === 'orders/fulfilled' || topic === 'orders/partially_fulfilled') {
+    return handleOrderFulfilled(rawBody, context.env);
+  }
+
   if (topic !== 'orders/paid') {
     return new Response('OK', {status: 200});
   }
@@ -104,6 +110,53 @@ export async function action({request, context}: Route.ActionArgs) {
   }
 
   console.log('[Webhook] Order saved:', savedOrder.id);
+  return new Response('OK', {status: 200});
+}
+
+/**
+ * orders/fulfilled | orders/partially_fulfilled Webhook。
+ * ペイロードは注文オブジェクト。タグで自社注文を判定し、
+ * 最新の fulfillment から追跡情報を orders に保存する。
+ */
+async function handleOrderFulfilled(rawBody: string, env: Env): Promise<Response> {
+  const order = JSON.parse(rawBody) as ShopifyOrder & {
+    fulfillments?: Array<{
+      created_at: string | null;
+      tracking_number: string | null;
+      tracking_numbers?: string[];
+      tracking_url: string | null;
+      tracking_urls?: string[];
+    }>;
+  };
+
+  const tags = (order.tags ?? '').split(',').map((t) => t.trim());
+  if (!tags.includes('福利厚生サイト')) {
+    return new Response('OK', {status: 200});
+  }
+
+  const latest = order.fulfillments?.[order.fulfillments.length - 1];
+  const trackingNumber =
+    latest?.tracking_number ?? latest?.tracking_numbers?.[0] ?? null;
+  const trackingUrl = latest?.tracking_url ?? latest?.tracking_urls?.[0] ?? null;
+
+  const supabase = createSupabaseAdmin(env);
+  const {data, error} = await supabase
+    .from('orders')
+    .update({
+      fulfillment_status: 'shipped',
+      tracking_number: trackingNumber,
+      tracking_url: trackingUrl,
+      shipped_at: latest?.created_at ?? new Date().toISOString(),
+    })
+    .eq('shopify_order_id', String(order.id))
+    .select('id');
+
+  if (error) {
+    // カラム未追加（マイグレーション前）等。Shopifyへはリトライさせない
+    console.error('[Webhook] orders/fulfilled update failed:', error.message);
+  } else if (data?.length) {
+    console.log('[Webhook] shipment saved for order:', data[0].id);
+  }
   return new Response('OK', {status: 200});
 }
 
