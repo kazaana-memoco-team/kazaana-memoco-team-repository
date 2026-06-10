@@ -9,47 +9,53 @@ import type {
 import {ProductItem} from '~/components/ProductItem';
 import {MockShopNotice} from '~/components/MockShopNotice';
 
-export const meta: Route.MetaFunction = () => {
-  return [{title: 'こんにちは！ | JAPAN BENEFITS'}];
+// 法人問い合わせ窓口（専用アドレス/フォーム開設後に差し替える）
+const CONTACT_EMAIL = 'k-kashimura@kazaana.co.jp';
+const CONTACT_SUBJECT = encodeURIComponent(
+  'JAPAN BENEFITS 導入のご相談（ファウンディングメンバー）',
+);
+
+export const meta: Route.MetaFunction = ({data}) => {
+  return [
+    {
+      title: data?.isMember
+        ? 'ホーム | JAPAN BENEFITS'
+        : 'JAPAN BENEFITS produced by BECOS｜日本の本物を、福利厚生に。',
+    },
+    {
+      name: 'description',
+      content:
+        '日本全国の伝統工芸を、従業員とそのご家族に会員特別価格でお届けする法人向け福利厚生サービス。BECOSプロデュース。',
+    },
+  ];
 };
 
 export async function loader(args: Route.LoaderArgs) {
-  // 認証チェック
-  const {requireAuth} = await import('~/lib/auth');
-  await requireAuth(args.request, args.context.env);
+  // 公開LPのため認証必須にはしない。会員かどうかで出し分ける
+  const {getAuthUser} = await import('~/lib/auth');
+  const user = await getAuthUser(args.request, args.context.env);
+  const isMember = Boolean(user);
 
-  // Start fetching non-critical data without blocking time to first byte
-  const deferredData = loadDeferredData(args);
-
-  // Await the critical data required to render initial state of the page
+  const deferredData = loadDeferredData(args, isMember);
   const criticalData = await loadCriticalData(args);
 
-  return {...deferredData, ...criticalData};
+  return {...deferredData, ...criticalData, isMember};
 }
 
-/**
- * Load data necessary for rendering content above the fold. This is the critical data
- * needed to render the page. If it's unavailable, the whole page should 400 or 500 error.
- */
 async function loadCriticalData({context}: Route.LoaderArgs) {
   return {
     isShopLinked: Boolean(context.env.PUBLIC_STORE_DOMAIN),
   };
 }
 
-/**
- * Load data for rendering content below the fold. This data is deferred and will be
- * fetched after the initial page load. If it's unavailable, the page should still 200.
- * Make sure to not throw any errors here, as it will cause the page to 500.
- */
-function loadDeferredData({context}: Route.LoaderArgs) {
-  const recommendedProducts = context.storefront
-    .query(RECOMMENDED_PRODUCTS_QUERY)
-    .catch((error: Error) => {
-      // Log query errors, but don't throw them so the page can still render
-      console.error(error);
-      return null;
-    });
+function loadDeferredData({context}: Route.LoaderArgs, isMember: boolean) {
+  // 商品（価格を含む）は会員のみ取得。公開LPはカテゴリ画像のみ使う
+  const recommendedProducts = isMember
+    ? context.storefront.query(RECOMMENDED_PRODUCTS_QUERY).catch((error: Error) => {
+        console.error(error);
+        return null;
+      })
+    : Promise.resolve(null);
 
   const homeCollections = context.storefront
     .query(HOME_COLLECTIONS_QUERY)
@@ -66,49 +72,44 @@ function loadDeferredData({context}: Route.LoaderArgs) {
 
 export default function Homepage() {
   const data = useLoaderData<typeof loader>();
+
+  if (!data.isMember) {
+    return <PublicLanding collections={data.homeCollections} />;
+  }
+
   return (
     <div className="home">
       {data.isShopLinked ? null : <MockShopNotice />}
-      <Hero />
+      <MemberHero />
       <FeaturedCategories collections={data.homeCollections} />
       <RecommendedProducts products={data.recommendedProducts} />
     </div>
   );
 }
 
-function Hero() {
+/* ============================================================
+ * 会員ホーム（ログイン後）— 検索ファースト
+ * ============================================================ */
+
+function MemberHero() {
   return (
-    <section
-      style={{
-        padding: '80px 24px',
-        textAlign: 'center',
-        background: '#000',
-        color: '#fff',
-        borderRadius: '12px',
-        marginBottom: '32px',
-      }}
-    >
-      <h1 style={{fontSize: '56px', margin: 0, letterSpacing: '0.05em'}}>
-        こんにちは！
-      </h1>
-      <p style={{margin: '20px 0 36px', fontSize: '18px', opacity: 0.85}}>
-        伝統工芸品を<strong>30%OFF</strong>の特別価格で。
-      </p>
-      <Link
-        to="/collections/all"
-        style={{
-          display: 'inline-block',
-          padding: '14px 36px',
-          background: '#fff',
-          color: '#000',
-          textDecoration: 'none',
-          borderRadius: '6px',
-          fontWeight: 'bold',
-          fontSize: '16px',
-        }}
-      >
-        商品一覧を見る →
-      </Link>
+    <section className="member-hero">
+      <h1>日本の本物と、暮らす歓び。</h1>
+      <p>すべての商品を、会員特別価格でお買い求めいただけます。</p>
+      <form action="/search" method="get" className="member-hero-search" role="search">
+        <input
+          type="search"
+          name="q"
+          placeholder="商品名・キーワードで探す（例: 江戸切子、夫婦箸）"
+          aria-label="商品を検索"
+        />
+        <button type="submit">検索</button>
+      </form>
+      <div className="member-hero-links">
+        <Link to="/collections">カテゴリから探す</Link>
+        <Link to="/collections/all">商品一覧を見る</Link>
+        <Link to="/mypage">注文履歴</Link>
+      </div>
     </section>
   );
 }
@@ -119,10 +120,7 @@ function FeaturedCategories({
   collections: Promise<HomeCollectionsQuery | null>;
 }) {
   return (
-    <section
-      aria-labelledby="featured-categories"
-      style={{marginBottom: '48px'}}
-    >
+    <section aria-labelledby="featured-categories" style={{marginBottom: '48px'}}>
       <header
         style={{
           display: 'flex',
@@ -164,9 +162,7 @@ function FeaturedCategories({
                         </span>
                       )}
                     </div>
-                    <h5 className="collection-item-title">
-                      {collection.title}
-                    </h5>
+                    <h5 className="collection-item-title">{collection.title}</h5>
                   </Link>
                 ))}
               </div>
@@ -184,11 +180,8 @@ function RecommendedProducts({
   products: Promise<RecommendedProductsQuery | null>;
 }) {
   return (
-    <section
-      className="recommended-products"
-      aria-labelledby="recommended-products"
-    >
-      <h2 id="recommended-products">Recommended Products</h2>
+    <section className="recommended-products" aria-labelledby="recommended-products">
+      <h2 id="recommended-products">おすすめ商品</h2>
       <Suspense fallback={<div>Loading...</div>}>
         <Await resolve={products}>
           {(response) => (
@@ -204,6 +197,252 @@ function RecommendedProducts({
       </Suspense>
       <br />
     </section>
+  );
+}
+
+/* ============================================================
+ * 公開LP（未ログイン）— サービス紹介
+ * 価格情報（割引率・会員価格）はここでは一切表示しない
+ * ============================================================ */
+
+function PublicLanding({
+  collections,
+}: {
+  collections: Promise<HomeCollectionsQuery | null>;
+}) {
+  return (
+    <div className="lp">
+      {/* ヒーロー */}
+      <section className="lp-hero">
+        <p className="lp-hero-brand">JAPAN BENEFITS produced by BECOS</p>
+        <h1>
+          日本の本物が、
+          <br />
+          ぜんぶ会員特別価格。
+        </h1>
+        <p className="lp-hero-sub">
+          日本全国の工房から届く伝統工芸を、従業員とそのご家族に。
+          <br />
+          BECOSがプロデュースする、法人向け福利厚生サービスです。
+        </p>
+        <div className="lp-cta-row">
+          <a
+            className="lp-btn lp-btn-primary"
+            href={`mailto:${CONTACT_EMAIL}?subject=${CONTACT_SUBJECT}`}
+          >
+            導入のご相談（無料）
+          </a>
+          <Link className="lp-btn lp-btn-ghost" to="/login">
+            会員の方はログイン
+          </Link>
+        </div>
+        <p className="lp-hero-note">※ 会員特別価格はログイン後にのみ表示されます</p>
+      </section>
+
+      {/* 3つの価値 */}
+      <section className="lp-section">
+        <h2>JAPAN BENEFITS の3つの価値</h2>
+        <div className="lp-features">
+          <div className="lp-feature">
+            <div className="lp-feature-icon">特別価格</div>
+            <h3>ほぼ原価の会員特別価格</h3>
+            <p>
+              全国の職人と直接つながるBECOSだから実現できる、会員だけの特別価格。
+              一般には公開されない価格で、本物の工芸品をお求めいただけます。
+            </p>
+          </div>
+          <div className="lp-feature">
+            <div className="lp-feature-icon">家族もOK</div>
+            <h3>2親等以内のご家族まで</h3>
+            <p>
+              従業員ご本人に加え、配偶者・お子様・ご両親・ご兄弟・祖父母・お孫様まで。
+              ご家族それぞれのアカウントでご利用いただけます。
+            </p>
+          </div>
+          <div className="lp-feature">
+            <div className="lp-feature-icon">日本の本物</div>
+            <h3>全国の工房から、直送</h3>
+            <p>
+              有田焼、江戸切子、西陣織、金沢箔——日本全国の伝統工芸が対象。
+              今後は日本のこだわりグルメ・体験へも拡大予定です。
+            </p>
+          </div>
+        </div>
+      </section>
+
+      {/* ご利用の流れ */}
+      <section className="lp-section lp-section-gray">
+        <h2>ご利用の流れ</h2>
+        <ol className="lp-steps">
+          <li>
+            <span className="lp-step-num">1</span>
+            <h3>法人契約</h3>
+            <p>従業員数に応じた月額定額。最短即日でご利用開始できます。</p>
+          </li>
+          <li>
+            <span className="lp-step-num">2</span>
+            <h3>従業員を招待</h3>
+            <p>管理画面からメールアドレスを入れるだけ。ご家族の招待も簡単です。</p>
+          </li>
+          <li>
+            <span className="lp-step-num">3</span>
+            <h3>会員価格でお買い物</h3>
+            <p>
+              決済・配送は運営元BECOS（thebecos.com）の安心インフラをそのまま利用します。
+            </p>
+          </li>
+        </ol>
+      </section>
+
+      {/* カテゴリビジュアル（価格なし） */}
+      <section className="lp-section">
+        <h2>こんな「日本の本物」に出会えます</h2>
+        <Suspense fallback={null}>
+          <Await resolve={collections}>
+            {(response) =>
+              response?.collections?.nodes?.length ? (
+                <div className="collections-grid">
+                  {response.collections.nodes.slice(0, 6).map((collection) => (
+                    <div key={collection.id} className="collection-item">
+                      <div className="collection-item-thumb">
+                        {collection.image ? (
+                          <Image
+                            data={collection.image}
+                            aspectRatio="1/1"
+                            sizes="(min-width: 45em) 200px, 50vw"
+                            alt={collection.image.altText || collection.title}
+                          />
+                        ) : (
+                          <span className="collection-item-fallback">
+                            {collection.title}
+                          </span>
+                        )}
+                      </div>
+                      <h5 className="collection-item-title">{collection.title}</h5>
+                    </div>
+                  ))}
+                </div>
+              ) : null
+            }
+          </Await>
+        </Suspense>
+        <p className="lp-note">※ 商品と会員特別価格は、ログイン後にご覧いただけます</p>
+      </section>
+
+      {/* 利用シーン */}
+      <section className="lp-section lp-section-gray">
+        <h2>こんなシーンで使われています</h2>
+        <div className="lp-scenes">
+          <div className="lp-scene">
+            <h3>誕生日・勤続記念に</h3>
+            <p>会社からの贈り物を、物語のある工芸品で。</p>
+          </div>
+          <div className="lp-scene">
+            <h3>結婚・出産のお祝いに</h3>
+            <p>ご家族の節目に、一生ものの逸品を会員価格で。</p>
+          </div>
+          <div className="lp-scene">
+            <h3>周年記念品・取引先への贈答に</h3>
+            <p>法人の一括購買も会員価格。1案件で年会費の元が取れます。</p>
+          </div>
+          <div className="lp-scene">
+            <h3>お中元・お歳暮に</h3>
+            <p>季節のご挨拶を、日本の本物で特別に。</p>
+          </div>
+        </div>
+      </section>
+
+      {/* 料金プラン */}
+      <section className="lp-section" id="plans">
+        <h2>料金プラン</h2>
+        <p className="lp-plans-lead">
+          従業員数で決まるシンプルな月額定額。商品購入時の追加マージンはありません。
+        </p>
+        <div className="lp-plans">
+          <div className="lp-plan">
+            <h3>S</h3>
+            <p className="lp-plan-size">従業員 〜30名</p>
+            <p className="lp-plan-price">
+              ¥19,800<span>/月（税抜）</span>
+            </p>
+          </div>
+          <div className="lp-plan">
+            <h3>M</h3>
+            <p className="lp-plan-size">従業員 〜100名</p>
+            <p className="lp-plan-price">
+              ¥39,800<span>/月（税抜）</span>
+            </p>
+          </div>
+          <div className="lp-plan">
+            <h3>L</h3>
+            <p className="lp-plan-size">従業員 〜300名</p>
+            <p className="lp-plan-price">
+              ¥79,800<span>/月（税抜）</span>
+            </p>
+          </div>
+          <div className="lp-plan">
+            <h3>XL</h3>
+            <p className="lp-plan-size">従業員 301名〜</p>
+            <p className="lp-plan-price lp-plan-price-custom">個別お見積り</p>
+          </div>
+        </div>
+        <p className="lp-note">
+          年間一括前払い（請求書払い）。月払いオプション・入会金についてはお問い合わせください。
+        </p>
+        <div className="lp-founding">
+          <h3>ファウンディングメンバー募集中</h3>
+          <p>
+            先行30社限定で、<strong>初年度50%OFF＋入会金無料</strong>
+            にてご案内しています。導入事例づくりにご協力いただける企業様を募集しています。
+          </p>
+          <a
+            className="lp-btn lp-btn-primary"
+            href={`mailto:${CONTACT_EMAIL}?subject=${CONTACT_SUBJECT}`}
+          >
+            ファウンディングメンバーに応募する
+          </a>
+        </div>
+      </section>
+
+      {/* FAQ */}
+      <section className="lp-section lp-section-gray">
+        <h2>よくあるご質問</h2>
+        <dl className="lp-faq">
+          <dt>商品の価格が表示されません</dt>
+          <dd>
+            会員特別価格は契約企業の会員様だけにご提供しているため、ログイン後にのみ表示されます。
+          </dd>
+          <dt>家族はどこまで利用できますか？</dt>
+          <dd>
+            従業員ご本人の2親等以内（配偶者・子・親・兄弟姉妹・祖父母・孫）までご利用いただけます。
+          </dd>
+          <dt>決済や配送は安全ですか？</dt>
+          <dd>
+            運営元BECOS（thebecos.com）のShopify決済・配送インフラをそのまま利用します。お支払いはクレジットカード等に対応しています。
+          </dd>
+          <dt>契約期間・解約について教えてください</dt>
+          <dd>
+            1年契約・自動更新です。詳細は導入のご相談時にご案内いたします。
+          </dd>
+        </dl>
+      </section>
+
+      {/* 最終CTA */}
+      <section className="lp-final-cta">
+        <h2>日本の本物を、あなたの会社の福利厚生に。</h2>
+        <div className="lp-cta-row">
+          <a
+            className="lp-btn lp-btn-primary"
+            href={`mailto:${CONTACT_EMAIL}?subject=${CONTACT_SUBJECT}`}
+          >
+            導入のご相談（無料）
+          </a>
+          <Link className="lp-btn lp-btn-ghost" to="/login">
+            会員の方はログイン
+          </Link>
+        </div>
+      </section>
+    </div>
   );
 }
 
