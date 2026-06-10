@@ -2,8 +2,9 @@ import type {CartApiQueryFragment} from 'storefrontapi.generated';
 import type {CartLayout} from '~/components/CartMain';
 import {CartForm, Money, type OptimisticCart} from '@shopify/hydrogen';
 import {useEffect, useId, useRef, useState} from 'react';
-import {useFetcher} from 'react-router';
+import {useFetcher, useRouteLoaderData} from 'react-router';
 import {applyDiscount} from '~/lib/pricing';
+import type {RootLoader} from '~/root';
 
 type CartSummaryProps = {
   cart: OptimisticCart<CartApiQueryFragment | null>;
@@ -11,6 +12,7 @@ type CartSummaryProps = {
 };
 
 export function CartSummary({cart, layout}: CartSummaryProps) {
+  const rootData = useRouteLoaderData<RootLoader>('root');
   const className =
     layout === 'page' ? 'cart-summary-page' : 'cart-summary-aside';
   const summaryId = useId();
@@ -43,6 +45,7 @@ export function CartSummary({cart, layout}: CartSummaryProps) {
                     const memberPrice = applyDiscount(
                       line.merchandise.price,
                       line.merchandise.product?.handle,
+                      rootData?.discountMap,
                     );
                     return sum + Number(memberPrice.amount) * line.quantity;
                   }, 0)

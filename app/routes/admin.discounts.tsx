@@ -2,6 +2,7 @@ import {useFetcher, useLoaderData, Link} from 'react-router';
 import {requireRole} from '~/lib/auth';
 import {createSupabaseAdmin} from '~/lib/supabase';
 import {DEFAULT_DISCOUNT} from '~/lib/pricing';
+import {clearDiscountCache} from '~/lib/discounts';
 import type {Route} from './+types/admin.discounts';
 
 type ActionData = {error?: string; success?: string};
@@ -34,6 +35,7 @@ export async function action({request, context}: Route.ActionArgs): Promise<Acti
         {onConflict: 'shopify_product_id'},
       );
     if (error) return {error: error.message};
+    clearDiscountCache();
     return {success: `「${handle}」の割引率を ${ratePercent}%OFF に設定しました`};
   }
 
@@ -44,6 +46,7 @@ export async function action({request, context}: Route.ActionArgs): Promise<Acti
       .delete()
       .eq('shopify_product_id', handle);
     if (error) return {error: error.message};
+    clearDiscountCache();
     return {success: `「${handle}」をデフォルト割引率に戻しました`};
   }
 
