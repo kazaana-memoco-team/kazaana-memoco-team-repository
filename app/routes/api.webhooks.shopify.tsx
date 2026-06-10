@@ -20,6 +20,11 @@ export async function action({request, context}: Route.ActionArgs) {
   }
 
   const topic = request.headers.get('X-Shopify-Topic') ?? '';
+
+  if (topic === 'fulfillments/create' || topic === 'fulfillments/update') {
+    return handleFulfillment(rawBody, context.env);
+  }
+
   if (topic !== 'orders/paid') {
     return new Response('OK', {status: 200});
   }
@@ -102,6 +107,39 @@ export async function action({request, context}: Route.ActionArgs) {
   return new Response('OK', {status: 200});
 }
 
+/**
+ * 発送（fulfillment）Webhook。
+ * ペイロードに注文タグが含まれないため、orders テーブルに存在する
+ * shopify_order_id とのマッチで自社注文のみ更新する（他店舗注文はno-op）。
+ */
+async function handleFulfillment(rawBody: string, env: Env): Promise<Response> {
+  const f = JSON.parse(rawBody) as ShopifyFulfillment;
+  if (!f.order_id) return new Response('OK', {status: 200});
+
+  const trackingNumber = f.tracking_number ?? f.tracking_numbers?.[0] ?? null;
+  const trackingUrl = f.tracking_url ?? f.tracking_urls?.[0] ?? null;
+
+  const supabase = createSupabaseAdmin(env);
+  const {data, error} = await supabase
+    .from('orders')
+    .update({
+      fulfillment_status: 'shipped',
+      tracking_number: trackingNumber,
+      tracking_url: trackingUrl,
+      shipped_at: f.created_at ?? new Date().toISOString(),
+    })
+    .eq('shopify_order_id', String(f.order_id))
+    .select('id');
+
+  if (error) {
+    // カラム未追加（マイグレーション前）等。Shopifyへはリトライさせない
+    console.error('[Webhook] fulfillment update failed:', error.message);
+  } else if (data?.length) {
+    console.log('[Webhook] fulfillment saved for order:', data[0].id);
+  }
+  return new Response('OK', {status: 200});
+}
+
 async function verifyWebhookHmac(
   body: string,
   hmacHeader: string,
@@ -132,6 +170,15 @@ function extractUserId(note: string): string | null {
     /会員ID:\s*([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})/i,
   );
   return match?.[1] ?? null;
+}
+
+interface ShopifyFulfillment {
+  order_id: number | null;
+  created_at: string | null;
+  tracking_number: string | null;
+  tracking_numbers?: string[];
+  tracking_url: string | null;
+  tracking_urls?: string[];
 }
 
 interface ShopifyOrder {

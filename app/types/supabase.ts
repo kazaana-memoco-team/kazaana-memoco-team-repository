@@ -11,6 +11,10 @@ export interface Database {
           name: string;
           member_limit: number | null;
           created_at: string;
+          // 以下は 2026-06-11 のマイグレーション後に存在（ご契約内容ページ用）
+          plan_name?: string | null;
+          contract_start?: string | null;
+          contract_end?: string | null;
         };
         Insert: Omit<Database['public']['Tables']['companies']['Row'], 'id' | 'created_at'> & {
           id?: string;
@@ -65,6 +69,11 @@ export interface Database {
           total_regular_price: number | null;
           total_member_price: number | null;
           created_at: string;
+          // 以下は 2026-06-11 のマイグレーション後に存在（発送状況表示用）
+          fulfillment_status?: string | null;
+          tracking_number?: string | null;
+          tracking_url?: string | null;
+          shipped_at?: string | null;
         };
         Insert: Omit<Database['public']['Tables']['orders']['Row'], 'id' | 'created_at'> & {
           id?: string;
