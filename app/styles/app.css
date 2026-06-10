@@ -1123,3 +1123,26 @@ button.reset:hover:not(:has(> *)) {
 
 .order-shipping-info { font-size: 0.85rem; color: #444; background: #f8fafc; border-radius: 6px; padding: 0.5rem 0.75rem; margin: 0 0 0.75rem; }
 .badge-muted { background: #f3f4f6; color: #6b7280; }
+
+
+/* ============================================================
+ * 企業管理画面 v2（dash-nav・KPI・CSVヘルプ・ご契約内容）
+ * ============================================================ */
+.dash-nav { display: flex; gap: 0.5rem; margin-bottom: 1.5rem; }
+.dash-nav a { padding: 0.45rem 1.1rem; border: 1px solid #d1d5db; border-radius: 999px; font-size: 0.875rem; color: #374151; text-decoration: none; }
+.dash-nav a:hover { background: #f9fafb; }
+.dash-nav a.dash-nav-active { background: #111; color: #fff; border-color: #111; }
+
+.stat-card-highlight { border-color: #16a34a; background: #f0fdf4; }
+.stat-card-highlight dd { color: #166534; }
+.stat-note { font-size: 0.7rem; vertical-align: super; }
+.stat-footnote { font-size: 0.75rem; color: #888; margin: -1.25rem 0 1.5rem; }
+
+.invite-subhead { font-weight: 700; font-size: 0.9rem; margin: 0 0 0.5rem; }
+.csv-help { font-size: 0.8rem; color: #555; margin: 0.75rem 0 0; padding-left: 1.25rem; line-height: 1.9; }
+
+.plan-summary { margin: 0; }
+.plan-summary > div { display: flex; padding: 0.6rem 0; border-bottom: 1px solid #f3f4f6; }
+.plan-summary dt { width: 220px; flex-shrink: 0; color: #6b7280; font-size: 0.875rem; }
+.plan-summary dd { margin: 0; font-size: 0.95rem; }
+.plan-note { display: block; font-size: 0.75rem; color: #888; }
