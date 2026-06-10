@@ -7,7 +7,7 @@ import {ProductItem} from '~/components/ProductItem';
 import type {ProductItemFragment} from 'storefrontapi.generated';
 
 export const meta: Route.MetaFunction = ({data}) => {
-  return [{title: `${data?.collection.title ?? 'カテゴリ'} | kazaana × thebecos`}];
+  return [{title: `${data?.collection.title ?? 'カテゴリ'} | JAPAN BENEFITS`}];
 };
 
 export async function loader(args: Route.LoaderArgs) {

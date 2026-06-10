@@ -5,7 +5,7 @@ import type {CollectionFragment} from 'storefrontapi.generated';
 import {PaginatedResourceSection} from '~/components/PaginatedResourceSection';
 
 export const meta: Route.MetaFunction = () => {
-  return [{title: 'カテゴリ一覧 | kazaana × thebecos'}];
+  return [{title: 'カテゴリ一覧 | JAPAN BENEFITS'}];
 };
 
 export async function loader(args: Route.LoaderArgs) {

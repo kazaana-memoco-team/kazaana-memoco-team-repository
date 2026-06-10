@@ -29,8 +29,8 @@ export function Header({
   return (
     <header className="header">
       <NavLink prefetch="intent" to="/" className="header-brand" end>
-        <span className="header-brand-name">kazaana × thebecos</span>
-        <span className="header-brand-tagline">伝統工芸品 30%OFF 会員サイト</span>
+        <span className="header-brand-name">JAPAN BENEFITS</span>
+        <span className="header-brand-tagline">produced by BECOS</span>
       </NavLink>
       <HeaderMenu
         menu={null}

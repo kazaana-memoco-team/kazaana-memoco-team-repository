@@ -19,9 +19,9 @@ export function Footer({
         {(footer) => (
           <footer className="footer">
             <div className="footer-inner">
-              <div className="footer-brand">kazaana × thebecos</div>
+              <div className="footer-brand">JAPAN BENEFITS</div>
               <div className="footer-tagline">
-                日本の伝統工芸品を 30%OFF の特別価格でお届けする会員サイト
+                produced by BECOS ― 日本の本物を会員特別価格でお届けする、法人向け福利厚生サービス
               </div>
               <div className="footer-links">
                 <Link to="/">ホーム</Link>

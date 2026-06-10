@@ -4,7 +4,7 @@ import {signIn, getAuthUser} from '~/lib/auth';
 import {buildLoginHeaders} from '~/lib/auth-cookie';
 
 export const meta: Route.MetaFunction = () => [
-  {title: 'ログイン | 会員制BECOS'},
+  {title: 'ログイン | JAPAN BENEFITS'},
 ];
 
 export async function loader({request, context}: Route.LoaderArgs) {
@@ -42,8 +42,8 @@ export default function LoginPage() {
     <div className="login-page">
       <div className="login-container">
         <div className="login-header">
-          <h1>会員制BECOS</h1>
-          <p>福利厚生サービス</p>
+          <h1>JAPAN BENEFITS</h1>
+          <p>produced by BECOS ― 法人向け福利厚生サービス</p>
         </div>
 
         <form method="post" className="login-form">
