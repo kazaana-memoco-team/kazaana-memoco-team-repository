@@ -1,4 +1,4 @@
-import {applyDiscount} from '~/lib/pricing';
+import {applyDiscount, type DiscountMap} from '~/lib/pricing';
 import type {CurrencyCode} from '@shopify/hydrogen/storefront-api-types';
 
 interface LineItemInput {
@@ -33,6 +33,7 @@ export async function createDraftOrder(
   lineItems: LineItemInput[],
   env: Env,
   meta?: {userId?: string; companyName?: string},
+  discounts?: DiscountMap,
 ): Promise<string | null> {
   const domain = env.SHOPIFY_STORE_DOMAIN || 'thebecos.myshopify.com';
 
@@ -40,6 +41,7 @@ export async function createDraftOrder(
     const memberPrice = applyDiscount(
       {amount: item.regularPrice, currencyCode: item.currencyCode},
       item.productHandle,
+      discounts,
     );
     const discountAmount = Number(item.regularPrice) - Number(memberPrice.amount);
     return {

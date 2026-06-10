@@ -2,6 +2,7 @@ import {redirect} from 'react-router';
 import type {Route} from './+types/api.checkout';
 import {requireAuth} from '~/lib/auth';
 import {createDraftOrder} from '~/lib/draft-orders';
+import {getDiscountMap} from '~/lib/discounts';
 
 export async function action({request, context}: Route.ActionArgs) {
   // 認証チェック
@@ -22,10 +23,14 @@ export async function action({request, context}: Route.ActionArgs) {
     productHandle: line.merchandise.product?.handle ?? '',
   }));
 
-  // Draft Order を作成
-  const invoiceUrl = await createDraftOrder(lineItems, context.env, {
-    userId: user.id,
-  });
+  // Draft Order を作成（表示と同じ個別割引率を適用）
+  const discountMap = await getDiscountMap(context.env);
+  const invoiceUrl = await createDraftOrder(
+    lineItems,
+    context.env,
+    {userId: user.id},
+    discountMap,
+  );
 
   if (!invoiceUrl) {
     return redirect('/cart?error=checkout_failed');

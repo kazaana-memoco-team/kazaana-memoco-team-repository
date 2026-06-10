@@ -75,14 +75,19 @@ export async function loader(args: Route.LoaderArgs) {
   const {storefront, env} = args.context;
 
   const {getAuthUser} = await import('~/lib/auth');
-  const userRole = await getAuthUser(args.request, env)
-    .then((u) => u?.role ?? null)
-    .catch(() => null);
+  const {getDiscountMap} = await import('~/lib/discounts');
+  const [userRole, discountMap] = await Promise.all([
+    getAuthUser(args.request, env)
+      .then((u) => u?.role ?? null)
+      .catch(() => null),
+    getDiscountMap(env),
+  ]);
 
   return {
     ...deferredData,
     ...criticalData,
     userRole,
+    discountMap,
     publicStoreDomain: env.PUBLIC_STORE_DOMAIN,
     shop: getShopAnalytics({
       storefront,
