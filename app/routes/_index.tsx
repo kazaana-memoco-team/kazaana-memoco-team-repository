@@ -10,7 +10,7 @@ import {ProductItem} from '~/components/ProductItem';
 import {MockShopNotice} from '~/components/MockShopNotice';
 
 export const meta: Route.MetaFunction = () => {
-  return [{title: 'こんにちは！ | kazaana × thebecos'}];
+  return [{title: 'こんにちは！ | JAPAN BENEFITS'}];
 };
 
 export async function loader(args: Route.LoaderArgs) {

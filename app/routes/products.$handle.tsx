@@ -15,7 +15,7 @@ import {redirectIfHandleIsLocalized} from '~/lib/redirect';
 
 export const meta: Route.MetaFunction = ({data}) => {
   return [
-    {title: `${data?.product.title ?? ''} | kazaana × thebecos`},
+    {title: `${data?.product.title ?? ''} | JAPAN BENEFITS`},
     {
       rel: 'canonical',
       href: `/products/${data?.product.handle}`,

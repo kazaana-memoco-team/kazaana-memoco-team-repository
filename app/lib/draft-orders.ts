@@ -55,7 +55,7 @@ export async function createDraftOrder(
     };
   });
 
-  const noteLines = ['会員制BECOSサイト経由の注文'];
+  const noteLines = ['JAPAN BENEFITSサイト経由の注文'];
   if (meta?.userId) noteLines.push(`会員ID: ${meta.userId}`);
   if (meta?.companyName) noteLines.push(`企業: ${meta.companyName}`);
 
