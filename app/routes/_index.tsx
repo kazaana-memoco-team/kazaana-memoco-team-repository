@@ -11,6 +11,13 @@ import {MockShopNotice} from '~/components/MockShopNotice';
 
 // 法人問い合わせ窓口（専用アドレス/フォーム開設後に差し替える）
 const CONTACT_EMAIL = 'k-kashimura@kazaana.co.jp';
+
+// 作成中・テスト用コレクションをトップに出さない
+const HIDDEN_COLLECTION_PATTERN = /作成中|テスト|test/i;
+
+function visibleCollections<T extends {title: string}>(nodes: T[]): T[] {
+  return nodes.filter((c) => !HIDDEN_COLLECTION_PATTERN.test(c.title));
+}
 const CONTACT_SUBJECT = encodeURIComponent(
   'JAPAN BENEFITS 導入のご相談（ファウンディングメンバー）',
 );
@@ -141,7 +148,9 @@ function FeaturedCategories({
           {(response) =>
             response?.collections?.nodes?.length ? (
               <div className="collections-grid">
-                {response.collections.nodes.slice(0, 6).map((collection) => (
+                {visibleCollections(response.collections.nodes)
+                  .slice(0, 6)
+                  .map((collection) => (
                   <Link
                     key={collection.id}
                     to={`/collections/${collection.handle}`}
@@ -302,7 +311,9 @@ function PublicLanding({
             {(response) =>
               response?.collections?.nodes?.length ? (
                 <div className="collections-grid">
-                  {response.collections.nodes.slice(0, 6).map((collection) => (
+                  {visibleCollections(response.collections.nodes)
+                    .slice(0, 6)
+                    .map((collection) => (
                     <div key={collection.id} className="collection-item">
                       <div className="collection-item-thumb">
                         {collection.image ? (
