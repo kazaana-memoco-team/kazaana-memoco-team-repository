@@ -41,6 +41,17 @@ function tabOf(order: OrderRow): Exclude<TabKey, 'all'> {
   return 'processing';
 }
 
+/** Shopify の配送会社名（例 "Sagawa (JA)"）を日本語表記に変換する */
+function carrierName(raw: string): string {
+  const s = raw.toLowerCase();
+  if (s.includes('sagawa')) return '佐川急便';
+  if (s.includes('yamato')) return 'ヤマト運輸';
+  if (s.includes('japan post') || s.includes('japanpost')) return '日本郵便';
+  if (s.includes('seino')) return '西濃運輸';
+  if (s.includes('fukuyama')) return '福山通運';
+  return raw;
+}
+
 export default function MypagePage() {
   const {user, orders} = useLoaderData<typeof loader>();
   const [tab, setTab] = useState<TabKey>('all');
@@ -85,7 +96,7 @@ export default function MypagePage() {
 
       {totalSavings > 0 && (
         <p className="mypage-savings-banner">
-          これまでの節約額 合計{' '}
+          これまでの割引額 合計{' '}
           <strong>¥{totalSavings.toLocaleString('ja-JP')}</strong>
         </p>
       )}
@@ -163,7 +174,7 @@ function OrderCard({order}: {order: OrderRow}) {
           {order.tracking_company && (
             <>
               {' ／ 配送会社: '}
-              {order.tracking_company}
+              {carrierName(order.tracking_company)}
             </>
           )}
           {order.tracking_number && (
@@ -196,13 +207,26 @@ function OrderCard({order}: {order: OrderRow}) {
         </div>
         {savings != null && savings > 0 && (
           <div>
-            <dt>節約額</dt>
+            <dt>割引額</dt>
             <dd className="order-savings">
               -¥{savings.toLocaleString('ja-JP')}
             </dd>
           </div>
         )}
       </dl>
+
+      <p className="order-payment-total">
+        {order.shipping_fee != null && (
+          <>送料 ¥{Number(order.shipping_fee).toLocaleString('ja-JP')} ／ </>
+        )}
+        <strong>
+          お支払い総額 ¥
+          {(order.total_paid != null
+            ? Number(order.total_paid)
+            : (order.total_member_price ?? 0)
+          ).toLocaleString('ja-JP')}
+        </strong>
+      </p>
 
       {order.order_items?.length > 0 && (
         <ul

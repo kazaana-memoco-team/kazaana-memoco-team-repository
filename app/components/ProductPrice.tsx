@@ -31,13 +31,23 @@ export function ProductPrice({
     const offPercent = Math.round(
       (1 - Number(discounted.amount) / Number(price.amount)) * 100,
     );
+    // 絶対額の割引を明示（購買意欲を高めるため）
+    const discountAmount = (
+      Number(price.amount) - Number(discounted.amount)
+    ).toFixed(price.currencyCode === 'JPY' ? 0 : 2);
     return (
       <div aria-label="Price" className="product-price product-price-on-sale" role="group">
         <Money data={discounted} />{' '}
         <s>
           <Money data={price} />
         </s>{' '}
-        <span className="price-badge">{offPercent}%OFF</span>
+        <span className="price-badge">{offPercent}%OFF</span>{' '}
+        <span className="price-discount-amount">
+          <Money
+            data={{amount: discountAmount, currencyCode: price.currencyCode}}
+          />
+          割引
+        </span>
       </div>
     );
   }

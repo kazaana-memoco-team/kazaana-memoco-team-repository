@@ -73,6 +73,12 @@ export async function action({request, context}: Route.ActionArgs) {
   );
   const totalMemberPrice = totalRegularPrice - totalLineDiscount;
 
+  // 実際の支払総額（送料・税込）と送料。マイページで「総額」を表示するため保存。
+  const totalPaid = Number(order.total_price);
+  const shippingFee = Number(
+    order.total_shipping_price_set?.shop_money?.amount ?? 0,
+  );
+
   const {data: savedOrder, error: orderError} = await supabase
     .from('orders')
     .insert({
@@ -83,6 +89,8 @@ export async function action({request, context}: Route.ActionArgs) {
       status: 'paid',
       total_regular_price: totalRegularPrice,
       total_member_price: totalMemberPrice,
+      total_paid: totalPaid,
+      shipping_fee: shippingFee,
       created_at: order.created_at,
     })
     .select('id')
@@ -253,7 +261,8 @@ interface ShopifyOrder {
   name: string; // 注文番号(例: BE19758)
   tags: string;
   note: string;
-  total_price: string;
+  total_price: string; // 支払総額(送料・税込)
+  total_shipping_price_set?: {shop_money?: {amount?: string}}; // 送料
   created_at: string;
   line_items: Array<{
     product_id: number | null;
