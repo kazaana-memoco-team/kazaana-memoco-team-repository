@@ -4,12 +4,16 @@ import {getPaginationVariables, Image, Money} from '@shopify/hydrogen';
 import {PaginatedResourceSection} from '~/components/PaginatedResourceSection';
 import {ProductItem} from '~/components/ProductItem';
 import type {CollectionItemFragment} from 'storefrontapi.generated';
+import {requireAuth} from '~/lib/auth';
 
 export const meta: Route.MetaFunction = () => {
-  return [{title: `Hydrogen | Products`}];
+  return [{title: `JAPAN BENEFITS｜商品一覧`}];
 };
 
 export async function loader(args: Route.LoaderArgs) {
+  // ログイン必須: 会員特別価格は未認証ユーザーに表示しない
+  await requireAuth(args.request, args.context.env);
+
   // Start fetching non-critical data without blocking time to first byte
   const deferredData = loadDeferredData(args);
 

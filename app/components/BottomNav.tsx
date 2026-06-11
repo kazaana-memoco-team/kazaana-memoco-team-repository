@@ -19,43 +19,48 @@ export function BottomNav({cart, userRole}: BottomNavProps) {
         </span>
         <span className="bottom-nav-label">ホーム</span>
       </NavLink>
-      <NavLink
-        to="/collections"
-        className="bottom-nav-item"
-        prefetch="intent"
-      >
-        <span className="bottom-nav-icon" aria-hidden>
-          ▦
-        </span>
-        <span className="bottom-nav-label">カテゴリ</span>
-      </NavLink>
-      <button
-        type="button"
-        className="bottom-nav-item bottom-nav-button"
-        onClick={() => open('search')}
-      >
-        <span className="bottom-nav-icon" aria-hidden>
-          ⌕
-        </span>
-        <span className="bottom-nav-label">検索</span>
-      </button>
-      <button
-        type="button"
-        className="bottom-nav-item bottom-nav-button"
-        onClick={() => open('cart')}
-      >
-        <span className="bottom-nav-icon" aria-hidden>
-          ⊕
-        </span>
-        <span className="bottom-nav-label">
-          カート
-          <Suspense fallback={null}>
-            <Await resolve={cart}>
-              <CartCountBadge />
-            </Await>
-          </Suspense>
-        </span>
-      </button>
+      {/* 未ログイン時はカタログ系を非表示（会員特別価格の保護） */}
+      {userRole && (
+        <>
+          <NavLink
+            to="/collections"
+            className="bottom-nav-item"
+            prefetch="intent"
+          >
+            <span className="bottom-nav-icon" aria-hidden>
+              ▦
+            </span>
+            <span className="bottom-nav-label">カテゴリ</span>
+          </NavLink>
+          <button
+            type="button"
+            className="bottom-nav-item bottom-nav-button"
+            onClick={() => open('search')}
+          >
+            <span className="bottom-nav-icon" aria-hidden>
+              ⌕
+            </span>
+            <span className="bottom-nav-label">検索</span>
+          </button>
+          <button
+            type="button"
+            className="bottom-nav-item bottom-nav-button"
+            onClick={() => open('cart')}
+          >
+            <span className="bottom-nav-icon" aria-hidden>
+              ⊕
+            </span>
+            <span className="bottom-nav-label">
+              カート
+              <Suspense fallback={null}>
+                <Await resolve={cart}>
+                  <CartCountBadge />
+                </Await>
+              </Suspense>
+            </span>
+          </button>
+        </>
+      )}
       {userRole ? (
         <NavLink to="/mypage" className="bottom-nav-item" prefetch="intent">
           <span className="bottom-nav-icon" aria-hidden>☻</span>
