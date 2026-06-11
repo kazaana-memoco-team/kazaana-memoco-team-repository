@@ -77,6 +77,9 @@ export interface Database {
           // 2026-06-11 PR2: マイページ表示拡充
           order_name?: string | null; // Shopify注文番号(例: BE19758)
           tracking_company?: string | null; // 配送会社(例: 佐川急便)
+          // 2026-06-12 PR3: 支払総額・送料
+          total_paid?: number | null; // 実際の支払総額(商品+送料、税込)
+          shipping_fee?: number | null; // 送料
         };
         Insert: Omit<Database['public']['Tables']['orders']['Row'], 'id' | 'created_at'> & {
           id?: string;

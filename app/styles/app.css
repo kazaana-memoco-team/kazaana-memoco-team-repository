@@ -869,6 +869,16 @@ button.reset:hover:not(:has(> *)) {
   vertical-align: middle;
 }
 
+/* 絶対額の割引表示（¥X 割引） */
+.price-discount-amount {
+  display: inline-block;
+  color: #16a34a;
+  font-size: 0.8125rem;
+  font-weight: 700;
+  vertical-align: middle;
+  white-space: nowrap;
+}
+
 .product-price-on-sale {
   align-items: baseline;
   gap: 0.4rem;
@@ -1008,6 +1018,14 @@ button.reset:hover:not(:has(> *)) {
 .order-prices dt { font-size: 0.75rem; color: #6b7280; }
 .order-prices dd { margin: 0; font-weight: 600; }
 .order-savings { color: #16a34a; }
+.order-payment-total {
+  font-size: 0.875rem;
+  color: #374151;
+  margin: 0 0 0.75rem;
+  padding-top: 0.5rem;
+  border-top: 1px dashed #e5e7eb;
+}
+.order-payment-total strong { color: #111827; font-size: 1rem; }
 
 /* ヘッダー追加ナビリンク */
 .header-nav-link {
