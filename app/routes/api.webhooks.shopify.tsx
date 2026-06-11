@@ -91,6 +91,8 @@ export async function action({request, context}: Route.ActionArgs) {
       total_member_price: totalMemberPrice,
       total_paid: totalPaid,
       shipping_fee: shippingFee,
+      shipping_address: order.shipping_address ?? null,
+      payment_method: order.payment_gateway_names?.[0] ?? null,
       created_at: order.created_at,
     })
     .select('id')
@@ -263,6 +265,16 @@ interface ShopifyOrder {
   note: string;
   total_price: string; // 支払総額(送料・税込)
   total_shipping_price_set?: {shop_money?: {amount?: string}}; // 送料
+  shipping_address?: {
+    name?: string | null;
+    zip?: string | null;
+    province?: string | null;
+    city?: string | null;
+    address1?: string | null;
+    address2?: string | null;
+    phone?: string | null;
+  } | null;
+  payment_gateway_names?: string[]; // 決済方法
   created_at: string;
   line_items: Array<{
     product_id: number | null;

@@ -1,14 +1,21 @@
 import {useState} from 'react';
-import {useLoaderData} from 'react-router';
+import {Link, useLoaderData} from 'react-router';
 import {requireAuth} from '~/lib/auth';
 import {createSupabaseAdmin} from '~/lib/supabase';
+import {
+  collectProductIds,
+  fetchProductImages,
+  orderKind,
+  orderKindLabel,
+  type OrderRow,
+} from '~/lib/order-display';
 import type {Route} from './+types/mypage._index';
 
 export async function loader({request, context}: Route.LoaderArgs) {
   const user = await requireAuth(request, context.env);
   const supabase = createSupabaseAdmin(context.env);
 
-  // 新カラム（tracking等）未追加でも壊れないよう * で取得する
+  // 新カラム未追加でも壊れないよう * で取得する
   const {data: orders} = await supabase
     .from('orders')
     .select(
@@ -18,42 +25,27 @@ export async function loader({request, context}: Route.LoaderArgs) {
     .eq('user_id', user.id)
     .order('created_at', {ascending: false});
 
-  return {user, orders: orders ?? []};
+  // 商品サムネイル（Storefront APIから・DB保存なし）
+  const images = await fetchProductImages(
+    context.storefront,
+    collectProductIds(orders ?? []),
+  );
+
+  return {user, orders: orders ?? [], images};
 }
 
-type OrderRow = Record<string, any>;
-
-// リゾートワークスの予約一覧と同じタブ型ステータス管理
+// BECOS本体（Shopify顧客アカウント）と同じステータス文言のタブ
 const TABS = [
   {key: 'all', label: 'すべて'},
-  {key: 'processing', label: '準備中'},
+  {key: 'processing', label: '確認済み'},
   {key: 'shipped', label: '発送済み'},
   {key: 'cancelled', label: 'キャンセル'},
 ] as const;
 
 type TabKey = (typeof TABS)[number]['key'];
 
-function tabOf(order: OrderRow): Exclude<TabKey, 'all'> {
-  if (order.status === 'cancelled' || order.status === 'refunded')
-    return 'cancelled';
-  if (order.shipped_at || order.fulfillment_status === 'shipped')
-    return 'shipped';
-  return 'processing';
-}
-
-/** Shopify の配送会社名（例 "Sagawa (JA)"）を日本語表記に変換する */
-function carrierName(raw: string): string {
-  const s = raw.toLowerCase();
-  if (s.includes('sagawa')) return '佐川急便';
-  if (s.includes('yamato')) return 'ヤマト運輸';
-  if (s.includes('japan post') || s.includes('japanpost')) return '日本郵便';
-  if (s.includes('seino')) return '西濃運輸';
-  if (s.includes('fukuyama')) return '福山通運';
-  return raw;
-}
-
 export default function MypagePage() {
-  const {user, orders} = useLoaderData<typeof loader>();
+  const {user, orders, images} = useLoaderData<typeof loader>();
   const [tab, setTab] = useState<TabKey>('all');
 
   const fullName =
@@ -63,7 +55,7 @@ export default function MypagePage() {
 
   const counts = orders.reduce(
     (acc, o) => {
-      acc[tabOf(o)] += 1;
+      acc[orderKind(o)] += 1;
       return acc;
     },
     {processing: 0, shipped: 0, cancelled: 0} as Record<
@@ -73,7 +65,7 @@ export default function MypagePage() {
   );
 
   const visible =
-    tab === 'all' ? orders : orders.filter((o) => tabOf(o) === tab);
+    tab === 'all' ? orders : orders.filter((o) => orderKind(o) === tab);
 
   const totalSavings = orders
     .filter((o) => o.status === 'paid')
@@ -101,7 +93,7 @@ export default function MypagePage() {
         </p>
       )}
 
-      <h2>購入履歴</h2>
+      <h2>注文</h2>
 
       <div className="tab-row" role="tablist">
         {TABS.map((t) => (
@@ -125,13 +117,13 @@ export default function MypagePage() {
       {visible.length === 0 ? (
         <p style={{color: '#666'}}>
           {tab === 'all'
-            ? 'まだ購入履歴がありません。'
+            ? 'まだ注文がありません。'
             : 'このステータスの注文はありません。'}
         </p>
       ) : (
         <div>
           {visible.map((order) => (
-            <OrderCard key={order.id} order={order} />
+            <OrderListItem key={order.id} order={order} images={images} />
           ))}
         </div>
       )}
@@ -139,130 +131,56 @@ export default function MypagePage() {
   );
 }
 
-function OrderCard({order}: {order: OrderRow}) {
+/** Shopify顧客アカウントの注文一覧と同じ構成のカード */
+function OrderListItem({
+  order,
+  images,
+}: {
+  order: OrderRow;
+  images: Record<string, string>;
+}) {
   const date = new Date(order.created_at).toLocaleDateString('ja-JP', {
-    year: 'numeric',
     month: 'long',
     day: 'numeric',
   });
-  const savings =
-    order.total_regular_price != null && order.total_member_price != null
-      ? order.total_regular_price - order.total_member_price
-      : null;
-  const kind = tabOf(order);
+  const items: OrderRow[] = order.order_items ?? [];
+  const itemCount = items.reduce((n, i) => n + (i.quantity ?? 0), 0);
+  const thumbs = items
+    .map((i) => (i.shopify_product_id ? images[i.shopify_product_id] : null))
+    .filter(Boolean)
+    .slice(0, 2) as string[];
+  const total =
+    order.total_paid != null
+      ? Number(order.total_paid)
+      : (order.total_member_price ?? 0);
+  const kind = orderKind(order);
 
   return (
-    <div className="order-card">
-      <div className="order-card-header">
-        <span style={{fontSize: '0.875rem', color: '#666'}}>
-          {date}
-          {order.order_name && (
-            <span style={{marginLeft: '0.75rem', color: '#999'}}>
-              注文番号 {order.order_name}
-            </span>
-          )}
-        </span>
-        <StatusBadge order={order} kind={kind} />
+    <Link to={`/mypage/orders/${order.id}`} className="order-list-item">
+      <div className="order-list-thumbs">
+        {thumbs.length ? (
+          thumbs.map((src) => (
+            <img key={src} src={src} alt="" loading="lazy" />
+          ))
+        ) : (
+          <span className="order-list-thumb-placeholder" aria-hidden>
+            ▦
+          </span>
+        )}
       </div>
-
-      {kind === 'shipped' && (
-        <p className="order-shipping-info">
-          発送日:{' '}
-          {order.shipped_at
-            ? new Date(order.shipped_at).toLocaleDateString('ja-JP')
-            : '-'}
-          {order.tracking_company && (
-            <>
-              {' ／ 配送会社: '}
-              {carrierName(order.tracking_company)}
-            </>
-          )}
-          {order.tracking_number && (
-            <>
-              {' ／ 追跡番号: '}
-              {order.tracking_url ? (
-                <a href={order.tracking_url} target="_blank" rel="noreferrer">
-                  {order.tracking_number}
-                </a>
-              ) : (
-                order.tracking_number
-              )}
-            </>
-          )}
-        </p>
-      )}
-
-      <dl className="order-prices">
-        <div>
-          <dt>通常価格</dt>
-          <dd>
-            <s style={{color: '#aaa'}}>
-              ¥{order.total_regular_price?.toLocaleString('ja-JP') ?? '-'}
-            </s>
-          </dd>
-        </div>
-        <div>
-          <dt>会員価格</dt>
-          <dd>¥{order.total_member_price?.toLocaleString('ja-JP') ?? '-'}</dd>
-        </div>
-        {savings != null && savings > 0 && (
-          <div>
-            <dt>割引額</dt>
-            <dd className="order-savings">
-              -¥{savings.toLocaleString('ja-JP')}
-            </dd>
-          </div>
-        )}
-      </dl>
-
-      <p className="order-payment-total">
-        {order.shipping_fee != null && (
-          <>送料 ¥{Number(order.shipping_fee).toLocaleString('ja-JP')} ／ </>
-        )}
-        <strong>
-          お支払い総額 ¥
-          {(order.total_paid != null
-            ? Number(order.total_paid)
-            : (order.total_member_price ?? 0)
-          ).toLocaleString('ja-JP')}
-        </strong>
-      </p>
-
-      {order.order_items?.length > 0 && (
-        <ul
-          style={{
-            margin: 0,
-            paddingLeft: '1rem',
-            fontSize: '0.875rem',
-            color: '#444',
-          }}
-        >
-          {order.order_items.map((item: OrderRow) => (
-            <li key={item.id}>
-              {item.product_title || '商品'}
-              {' — 数量 '}
-              {item.quantity} ×{' '}
-              {item.member_price != null
-                ? `¥${Number(item.member_price).toLocaleString('ja-JP')}`
-                : '-'}
-            </li>
-          ))}
-        </ul>
-      )}
-    </div>
+      <div className="order-list-main">
+        <span className={`order-list-status order-list-status-${kind}`}>
+          {orderKindLabel(order)}
+        </span>
+        <span className="order-list-date">{date}</span>
+        <span className="order-list-meta">
+          {order.order_name ? `${order.order_name}・` : ''}
+          {itemCount}個のアイテム
+        </span>
+      </div>
+      <div className="order-list-total">
+        ¥{total.toLocaleString('ja-JP')} <span>JPY</span>
+      </div>
+    </Link>
   );
-}
-
-function StatusBadge({order, kind}: {order: OrderRow; kind: string}) {
-  if (kind === 'shipped') {
-    return <span className="badge badge-active">発送済み</span>;
-  }
-  if (kind === 'cancelled') {
-    return (
-      <span className="badge badge-muted">
-        {order.status === 'refunded' ? '返金済み' : 'キャンセル'}
-      </span>
-    );
-  }
-  return <span className="badge badge-pending">準備中</span>;
 }
