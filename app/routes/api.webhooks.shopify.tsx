@@ -79,6 +79,7 @@ export async function action({request, context}: Route.ActionArgs) {
       user_id: userId,
       company_id: user?.company_id ?? null,
       shopify_order_id: String(order.id),
+      order_name: order.name ?? null,
       status: 'paid',
       total_regular_price: totalRegularPrice,
       total_member_price: totalMemberPrice,
@@ -103,6 +104,7 @@ export async function action({request, context}: Route.ActionArgs) {
       order_id: savedOrder.id,
       shopify_product_id: item.product_id ? String(item.product_id) : null,
       shopify_variant_id: item.variant_id ? String(item.variant_id) : null,
+      product_title: item.title ?? null,
       quantity: item.quantity,
       regular_price: Number(item.price),
       member_price: memberPrice,
@@ -135,6 +137,7 @@ async function handleOrderFulfilled(rawBody: string, env: Env): Promise<Response
       tracking_numbers?: string[];
       tracking_url: string | null;
       tracking_urls?: string[];
+      tracking_company?: string | null;
     }>;
   };
 
@@ -147,6 +150,7 @@ async function handleOrderFulfilled(rawBody: string, env: Env): Promise<Response
   const trackingNumber =
     latest?.tracking_number ?? latest?.tracking_numbers?.[0] ?? null;
   const trackingUrl = latest?.tracking_url ?? latest?.tracking_urls?.[0] ?? null;
+  const trackingCompany = latest?.tracking_company ?? null;
 
   const supabase = createSupabaseAdmin(env);
   const {data, error} = await supabase
@@ -155,6 +159,7 @@ async function handleOrderFulfilled(rawBody: string, env: Env): Promise<Response
       fulfillment_status: 'shipped',
       tracking_number: trackingNumber,
       tracking_url: trackingUrl,
+      tracking_company: trackingCompany,
       shipped_at: latest?.created_at ?? new Date().toISOString(),
     })
     .eq('shopify_order_id', String(order.id))
@@ -245,6 +250,7 @@ interface ShopifyFulfillment {
 
 interface ShopifyOrder {
   id: number;
+  name: string; // 注文番号(例: BE19758)
   tags: string;
   note: string;
   total_price: string;
@@ -252,6 +258,7 @@ interface ShopifyOrder {
   line_items: Array<{
     product_id: number | null;
     variant_id: number | null;
+    title: string; // 商品名
     quantity: number;
     price: string;
     total_discount: string;

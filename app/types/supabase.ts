@@ -74,6 +74,9 @@ export interface Database {
           tracking_number?: string | null;
           tracking_url?: string | null;
           shipped_at?: string | null;
+          // 2026-06-11 PR2: マイページ表示拡充
+          order_name?: string | null; // Shopify注文番号(例: BE19758)
+          tracking_company?: string | null; // 配送会社(例: 佐川急便)
         };
         Insert: Omit<Database['public']['Tables']['orders']['Row'], 'id' | 'created_at'> & {
           id?: string;
@@ -90,6 +93,8 @@ export interface Database {
           regular_price: number | null;
           member_price: number | null;
           discount_rate: number | null;
+          // 2026-06-11 PR2: マイページ表示拡充
+          product_title?: string | null; // 商品名
         };
         Insert: Omit<Database['public']['Tables']['order_items']['Row'], 'id'> & {id?: string};
         Update: Partial<Database['public']['Tables']['order_items']['Insert']>;
