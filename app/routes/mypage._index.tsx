@@ -13,7 +13,7 @@ export async function loader({request, context}: Route.LoaderArgs) {
     .from('orders')
     .select(
       `*,
-       order_items(id, shopify_product_id, shopify_variant_id, quantity, regular_price, member_price)`,
+       order_items(id, shopify_product_id, shopify_variant_id, product_title, quantity, regular_price, member_price)`,
     )
     .eq('user_id', user.id)
     .order('created_at', {ascending: false});
@@ -143,7 +143,14 @@ function OrderCard({order}: {order: OrderRow}) {
   return (
     <div className="order-card">
       <div className="order-card-header">
-        <span style={{fontSize: '0.875rem', color: '#666'}}>{date}</span>
+        <span style={{fontSize: '0.875rem', color: '#666'}}>
+          {date}
+          {order.order_name && (
+            <span style={{marginLeft: '0.75rem', color: '#999'}}>
+              注文番号 {order.order_name}
+            </span>
+          )}
+        </span>
         <StatusBadge order={order} kind={kind} />
       </div>
 
@@ -153,6 +160,12 @@ function OrderCard({order}: {order: OrderRow}) {
           {order.shipped_at
             ? new Date(order.shipped_at).toLocaleDateString('ja-JP')
             : '-'}
+          {order.tracking_company && (
+            <>
+              {' ／ 配送会社: '}
+              {order.tracking_company}
+            </>
+          )}
           {order.tracking_number && (
             <>
               {' ／ 追跡番号: '}
@@ -202,7 +215,9 @@ function OrderCard({order}: {order: OrderRow}) {
         >
           {order.order_items.map((item: OrderRow) => (
             <li key={item.id}>
-              数量 {item.quantity} ×{' '}
+              {item.product_title || '商品'}
+              {' — 数量 '}
+              {item.quantity} ×{' '}
               {item.member_price != null
                 ? `¥${Number(item.member_price).toLocaleString('ja-JP')}`
                 : '-'}
