@@ -36,8 +36,19 @@ export async function action({request, context}: Route.ActionArgs) {
     return redirect('/cart?error=checkout_failed');
   }
 
+  // Draft Order 決済へ進む時点で Hydrogen 側のカートを空にする。
+  // これをしないと決済後に戻ってきてもカートに商品が残り、二重注文の原因になる。
+  let headers = new Headers();
+  const lineIds = cart.lines.nodes.map((line: any) => line.id);
+  if (lineIds.length) {
+    const cleared = await context.cart.removeLines(lineIds);
+    if (cleared?.cart?.id) {
+      headers = context.cart.setCartId(cleared.cart.id);
+    }
+  }
+
   // Shopify の Draft Order 決済ページへリダイレクト
-  return redirect(invoiceUrl);
+  return redirect(invoiceUrl, {headers});
 }
 
 // GET リクエストはカートへ
