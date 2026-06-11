@@ -12,12 +12,16 @@ import type {
   RegularSearchQuery,
   PredictiveSearchQuery,
 } from 'storefrontapi.generated';
+import {requireAuth} from '~/lib/auth';
 
 export const meta: Route.MetaFunction = () => {
-  return [{title: `Hydrogen | Search`}];
+  return [{title: `JAPAN BENEFITS｜検索`}];
 };
 
 export async function loader({request, context}: Route.LoaderArgs) {
+  // ログイン必須: 会員特別価格は未認証ユーザーに表示しない
+  await requireAuth(request, context.env);
+
   const url = new URL(request.url);
   const isPredictive = url.searchParams.has('predictive');
   const searchPromise: Promise<PredictiveSearchReturn | RegularSearchReturn> =

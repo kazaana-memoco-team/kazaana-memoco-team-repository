@@ -37,6 +37,7 @@ export function Header({
         viewport="desktop"
         primaryDomainUrl={header.shop.primaryDomain.url}
         publicStoreDomain={publicStoreDomain}
+        userRole={userRole}
       />
       <HeaderCtas isLoggedIn={isLoggedIn} cart={cart} userRole={userRole} />
     </header>
@@ -48,11 +49,13 @@ export function HeaderMenu({
   primaryDomainUrl,
   viewport,
   publicStoreDomain,
+  userRole,
 }: {
   menu: HeaderProps['header']['menu'];
   primaryDomainUrl: HeaderProps['header']['shop']['primaryDomain']['url'];
   viewport: Viewport;
   publicStoreDomain: HeaderProps['publicStoreDomain'];
+  userRole?: string | null;
 }) {
   const className = `header-menu-${viewport}`;
   const {close} = useAside();
@@ -70,7 +73,9 @@ export function HeaderMenu({
           Home
         </NavLink>
       )}
-      {(menu || FALLBACK_HEADER_MENU).items.map((item) => {
+      {/* 未ログイン時はカタログ系メニューを非表示（会員特別価格の保護） */}
+      {userRole &&
+        (menu || FALLBACK_HEADER_MENU).items.map((item) => {
         if (!item.url) return null;
 
         // if the url is internal, we strip the domain
@@ -139,8 +144,16 @@ function HeaderCtas({
           管理
         </NavLink>
       )}
-      <SearchToggle />
-      <CartToggle cart={cart} />
+      {userRole ? (
+        <>
+          <SearchToggle />
+          <CartToggle cart={cart} />
+        </>
+      ) : (
+        <NavLink prefetch="intent" to="/login" className="header-nav-link">
+          ログイン
+        </NavLink>
+      )}
     </nav>
   );
 }
