@@ -1,6 +1,9 @@
 import {applyDiscount, type DiscountMap} from '~/lib/pricing';
 import type {CurrencyCode} from '@shopify/hydrogen/storefront-api-types';
 
+/** 福利厚生注文に必ず課金する送料（全国一律・JPY）。沖縄等の出し分けは Phase 2。 */
+const SHIPPING_FEE_JPY = '880';
+
 interface LineItemInput {
   variantGid: string;   // gid://shopify/ProductVariant/12345
   quantity: number;
@@ -74,6 +77,15 @@ export async function createDraftOrder(
           line_items: draftLineItems,
           tags: '福利厚生サイト,kazaana-memoco',
           note: noteLines.join(' / '),
+          // 福利厚生は「ほぼ原価＋送料」モデルのため、注文金額にかかわらず
+          // 必ず送料を課金する（店舗の「○円以上送料無料」を上書き）。
+          // shipping_line を明示すると Draft Order 決済時に店舗の自動送料計算を
+          // 使わず、この固定送料が適用される。
+          // ※ 沖縄等の地域別出し分け（¥1,980）は住所確定タイミングの都合で Phase 2。
+          shipping_line: {
+            title: '送料',
+            price: SHIPPING_FEE_JPY,
+          },
         },
       }),
     },

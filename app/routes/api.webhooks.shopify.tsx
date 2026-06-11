@@ -64,6 +64,15 @@ export async function action({request, context}: Route.ActionArgs) {
     0,
   );
 
+  // 会員価格は「商品のみ」の合計にする（送料・税を含めない）。
+  // order.total_price は送料込みのため、送料が課金された注文だと
+  // 節約額（通常−会員）が送料の分だけ歪んでしまう不具合があった。
+  const totalLineDiscount = order.line_items.reduce(
+    (sum, item) => sum + Number(item.total_discount ?? 0),
+    0,
+  );
+  const totalMemberPrice = totalRegularPrice - totalLineDiscount;
+
   const {data: savedOrder, error: orderError} = await supabase
     .from('orders')
     .insert({
@@ -72,7 +81,7 @@ export async function action({request, context}: Route.ActionArgs) {
       shopify_order_id: String(order.id),
       status: 'paid',
       total_regular_price: totalRegularPrice,
-      total_member_price: Number(order.total_price),
+      total_member_price: totalMemberPrice,
       created_at: order.created_at,
     })
     .select('id')
