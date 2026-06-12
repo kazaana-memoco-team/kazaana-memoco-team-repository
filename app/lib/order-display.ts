@@ -40,8 +40,13 @@ export function carrierName(raw: string): string {
 export function paymentLabel(raw: string | null | undefined): string | null {
   if (!raw) return null;
   const s = raw.toLowerCase();
-  if (s === 'manual') return '銀行振込';
-  return raw; // 「銀行振込」「クレジットカード」等はそのまま日本語で届く
+  if (s === 'manual' || s.includes('bank deposit')) return '銀行振込';
+  if (s.includes('shopify_payments') || s.includes('credit')) return 'クレジットカード';
+  if (s.includes('paypal')) return 'PayPal';
+  if (s.includes('paidy')) return 'あと払い（ペイディ）';
+  if (s.includes('paypay')) return 'PayPay';
+  if (s.includes('merpay') || s.includes('sbps')) return 'メルペイ等（SBPS）';
+  return raw; // 日本語名で届くものはそのまま
 }
 
 /** 注文に含まれる商品IDの一覧（重複除去） */
