@@ -172,7 +172,7 @@ function StockBadge({status}: {status: InventoryStatus}) {
   > = {
     in_stock: {
       label: '在庫あり',
-      sub: 'ご注文後、最短で発送します',
+      sub: '2営業日以内に発送します',
       cls: 'stock-badge-in',
     },
     made_to_order: {
