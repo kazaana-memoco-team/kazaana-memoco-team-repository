@@ -237,7 +237,7 @@ function PublicLanding({
         <div className="lp-cta-row">
           <a
             className="lp-btn lp-btn-primary"
-            href={`mailto:${CONTACT_EMAIL}?subject=${CONTACT_SUBJECT}`}
+            href="/contact"
           >
             導入のご相談（無料）
           </a>
@@ -408,7 +408,7 @@ function PublicLanding({
           </p>
           <a
             className="lp-btn lp-btn-primary"
-            href={`mailto:${CONTACT_EMAIL}?subject=${CONTACT_SUBJECT}`}
+            href="/contact"
           >
             ファウンディングメンバーに応募する
           </a>
@@ -444,7 +444,7 @@ function PublicLanding({
         <div className="lp-cta-row">
           <a
             className="lp-btn lp-btn-primary"
-            href={`mailto:${CONTACT_EMAIL}?subject=${CONTACT_SUBJECT}`}
+            href="/contact"
           >
             導入のご相談（無料）
           </a>
