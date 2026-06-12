@@ -1,4 +1,5 @@
-import {redirect, useLoaderData} from 'react-router';
+import {Suspense} from 'react';
+import {redirect, useLoaderData, Await} from 'react-router';
 import type {Route} from './+types/products.$handle';
 import {
   getSelectedProductOptions,
@@ -11,6 +12,7 @@ import {
 import {ProductPrice} from '~/components/ProductPrice';
 import {ProductGallery} from '~/components/ProductGallery';
 import {ReviewStars} from '~/components/ReviewStars';
+import {ReviewArticle} from '~/components/ReviewArticle';
 import {ProductForm} from '~/components/ProductForm';
 import {stockStatus, type InventoryStatus} from '~/lib/inventory';
 import {redirectIfHandleIsLocalized} from '~/lib/redirect';
@@ -86,14 +88,20 @@ async function loadCriticalData({context, params, request}: Route.LoaderArgs) {
  * Make sure to not throw any errors here, as it will cause the page to 500.
  */
 function loadDeferredData({context, params}: Route.LoaderArgs) {
-  // Put any API calls that is not critical to be available on first page render
-  // For example: product reviews, product recommendations, social feeds.
+  // レビュー記事(スタッフの一押しポイント)は非クリティカル。deferredで取得し
+  // ページ描画をブロックしない。失敗時は空配列。
+  const handle = params.handle;
+  const reviewImages: Promise<string[]> = handle
+    ? import('~/lib/reviews')
+        .then(({getReviewImages}) => getReviewImages(context.env, handle))
+        .catch(() => [])
+    : Promise.resolve([]);
 
-  return {};
+  return {reviewImages};
 }
 
 export default function Product() {
-  const {product, inventory} = useLoaderData<typeof loader>();
+  const {product, inventory, reviewImages} = useLoaderData<typeof loader>();
 
   // Optimistically selects a variant with given available variant information
   const selectedVariant = useOptimisticVariant(
@@ -114,6 +122,7 @@ export default function Product() {
   const {title, descriptionHtml} = product;
 
   return (
+    <>
     <div className="product">
       <ProductGallery
         images={product.images?.nodes ?? []}
@@ -162,6 +171,14 @@ export default function Product() {
         }}
       />
     </div>
+
+    {/* スタッフの一押しポイント(レビュー記事)— 非クリティカル・全幅 */}
+    <Suspense fallback={null}>
+      <Await resolve={reviewImages} errorElement={null}>
+        {(imgs) => <ReviewArticle images={imgs ?? []} title={title} />}
+      </Await>
+    </Suspense>
+    </>
   );
 }
 
