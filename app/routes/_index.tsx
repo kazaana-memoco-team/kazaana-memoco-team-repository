@@ -50,9 +50,36 @@ export async function loader(args: Route.LoaderArgs) {
 }
 
 async function loadCriticalData({context}: Route.LoaderArgs) {
+  // LPの社会的証明: 会員の累計割引額・先行30社の残枠（個人情報は扱わない集計のみ）
+  const social = await loadSocialProof(context).catch(() => ({
+    totalSavings: 0,
+    foundingRemaining: 30,
+  }));
   return {
     isShopLinked: Boolean(context.env.PUBLIC_STORE_DOMAIN),
+    ...social,
   };
+}
+
+const FOUNDING_TOTAL = 30;
+
+async function loadSocialProof(context: Route.LoaderArgs['context']) {
+  const {createSupabaseAdmin} = await import('~/lib/supabase');
+  const supabase = createSupabaseAdmin(context.env);
+  const [{data: orders}, {count: companyCount}] = await Promise.all([
+    supabase
+      .from('orders')
+      .select('total_regular_price, total_member_price')
+      .eq('status', 'paid'),
+    supabase.from('companies').select('id', {count: 'exact', head: true}),
+  ]);
+  const totalSavings = (orders ?? []).reduce(
+    (sum, o) =>
+      sum + Math.max(0, (o.total_regular_price ?? 0) - (o.total_member_price ?? 0)),
+    0,
+  );
+  const foundingRemaining = Math.max(0, FOUNDING_TOTAL - (companyCount ?? 0));
+  return {totalSavings, foundingRemaining};
 }
 
 function loadDeferredData({context}: Route.LoaderArgs, isMember: boolean) {
@@ -81,7 +108,13 @@ export default function Homepage() {
   const data = useLoaderData<typeof loader>();
 
   if (!data.isMember) {
-    return <PublicLanding collections={data.homeCollections} />;
+    return (
+      <PublicLanding
+        collections={data.homeCollections}
+        totalSavings={data.totalSavings}
+        foundingRemaining={data.foundingRemaining}
+      />
+    );
   }
 
   return (
@@ -216,8 +249,12 @@ function RecommendedProducts({
 
 function PublicLanding({
   collections,
+  totalSavings,
+  foundingRemaining,
 }: {
   collections: Promise<HomeCollectionsQuery | null>;
+  totalSavings: number;
+  foundingRemaining: number;
 }) {
   return (
     <div className="lp">
@@ -234,6 +271,14 @@ function PublicLanding({
           <br />
           BECOSがプロデュースする、法人向け福利厚生サービスです。
         </p>
+        {/* 社会的証明: 累計割引額（一定額を超えたら表示） */}
+        {totalSavings >= 100000 && (
+          <p className="lp-hero-proof">
+            会員はこれまで累計{' '}
+            <strong>¥{totalSavings.toLocaleString('ja-JP')}</strong> 分、
+            おトクにお買い物しています
+          </p>
+        )}
         <div className="lp-cta-row">
           <a
             className="lp-btn lp-btn-primary"
@@ -402,6 +447,13 @@ function PublicLanding({
         </p>
         <div className="lp-founding">
           <h3>ファウンディングメンバー募集中</h3>
+          {foundingRemaining > 0 ? (
+            <p className="lp-founding-slots">
+              先行30社限定 ／ <strong>残り {foundingRemaining} 社</strong>
+            </p>
+          ) : (
+            <p className="lp-founding-slots">先行30社の募集は終了しました</p>
+          )}
           <p>
             先行30社限定で、<strong>初年度50%OFF＋入会金無料</strong>
             にてご案内しています。導入事例づくりにご協力いただける企業様を募集しています。

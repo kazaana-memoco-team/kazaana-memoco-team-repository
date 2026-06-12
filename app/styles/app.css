@@ -1942,3 +1942,23 @@ main > div > h1::after {
   .policy-table th, .policy-table td { display: block; width: auto; }
   .policy-table th { border-bottom: none; padding-bottom: 0.25rem; }
 }
+
+/* LP社会的証明・ファウンディング残数（PR14） */
+.lp-hero-proof {
+  margin: 1.25rem auto 0;
+  max-width: 560px;
+  font-size: 0.95rem;
+  color: var(--jb-gold-light);
+}
+.lp-hero-proof strong { color: #fff; font-size: 1.1rem; }
+.lp-founding-slots {
+  display: inline-block;
+  background: rgba(153, 32, 28, 0.08);
+  color: var(--jb-crimson);
+  border: 1px solid rgba(153, 32, 28, 0.25);
+  border-radius: 999px;
+  padding: 0.35rem 1rem;
+  font-size: 0.9rem;
+  margin: 0 0 0.75rem;
+}
+.lp-founding-slots strong { font-size: 1rem; }
