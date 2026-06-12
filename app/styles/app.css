@@ -1789,6 +1789,9 @@ main > div > h1::after {
 .lp-btn-gold:hover { filter: brightness(1.05); }
 .lp-hero-login { opacity: 0.85; }
 .lp-hero-login a { color: var(--jb-gold-light); text-decoration: underline; }
+.lp-hero-guide { margin: 1rem 0 0; }
+.lp-hero-guide a { color: var(--jb-gold-light); font-size: 0.95rem; text-decoration: underline; }
+.lp-guide-link { color: var(--jb-crimson); text-decoration: underline; font-weight: 600; }
 
 /* 実績バー（数字／実数登録時のみ表示） */
 .lp-stats { background: var(--jb-black); color: #fff; border-radius: 12px; padding: 1.75rem 1.5rem; margin: 0 0 1rem; }
@@ -2357,4 +2360,74 @@ main > div > h1::after {
 
 @media (max-width: 44.99em) {
   .address-form-grid { grid-template-columns: 1fr; }
+}
+
+/* ============================================================
+   サービス紹介資料（/service-guide）画面＋印刷(PDF)
+   ============================================================ */
+.guide { max-width: 800px; margin: 0 auto; padding: 0 1rem 3rem; color: var(--jb-text); }
+.guide-toolbar { display: flex; justify-content: space-between; align-items: center; padding: 1rem 0; }
+.guide-back { font-size: 0.875rem; color: var(--jb-text-muted); }
+.guide-print {
+  border: 1px solid var(--jb-gold); background: var(--jb-gold); color: #1a1a1a;
+  font-weight: 700; font-size: 0.875rem; border-radius: 6px; padding: 0.5rem 1.1rem; cursor: pointer;
+}
+.guide-cover {
+  background: var(--jb-black); color: #fff; border-radius: 12px;
+  padding: 3.5rem 2rem; text-align: center; margin-bottom: 2rem;
+}
+.guide-cover-brand { color: var(--jb-gold-light); letter-spacing: 0.18em; font-size: 0.8rem; margin: 0 0 1rem; }
+.guide-cover h1 { color: #fff; font-family: var(--jb-serif); font-size: clamp(1.8rem, 5vw, 2.8rem); line-height: 1.4; margin: 0 0 0.75rem; letter-spacing: 0.04em; }
+.guide-cover-sub { color: rgba(255,255,255,0.8); letter-spacing: 0.2em; margin: 0; }
+
+.guide-section { margin: 0 0 2.25rem; }
+.guide-section > h2 {
+  font-family: var(--jb-serif); font-size: 1.35rem; color: var(--jb-black);
+  border-bottom: 2px solid var(--jb-gold); padding-bottom: 0.5rem; margin: 0 0 1rem;
+  display: flex; align-items: baseline; gap: 0.6rem;
+}
+.guide-section-n { color: var(--jb-gold); font-size: 1rem; font-weight: 700; }
+.guide-lead { line-height: 1.9; margin: 0 0 0.75rem; }
+.guide-list { line-height: 1.9; padding-left: 1.2rem; margin: 0 0 0.75rem; }
+.guide-list-cols { columns: 2; column-gap: 1.5rem; }
+.guide-cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; }
+.guide-card { border: 1px solid var(--jb-border); border-radius: 10px; padding: 1.1rem; background: #fff; }
+.guide-card h3 { font-size: 1rem; margin: 0 0 0.5rem; color: var(--jb-black); }
+.guide-card p { font-size: 0.85rem; line-height: 1.8; color: var(--jb-text-muted); margin: 0; }
+.guide-steps { list-style: none; padding: 0; margin: 0; display: grid; gap: 1rem; }
+.guide-steps li { display: flex; gap: 1rem; align-items: flex-start; }
+.guide-step-num {
+  flex: 0 0 auto; width: 2rem; height: 2rem; border-radius: 50%; background: var(--jb-crimson);
+  color: #fff; font-weight: 700; display: flex; align-items: center; justify-content: center;
+}
+.guide-steps h3 { margin: 0.2rem 0 0.3rem; font-size: 1.05rem; }
+.guide-steps p { margin: 0; line-height: 1.8; color: var(--jb-text-muted); font-size: 0.9rem; }
+.guide-table { width: 100%; border-collapse: collapse; margin-bottom: 0.75rem; }
+.guide-table th, .guide-table td { border: 1px solid var(--jb-border); padding: 0.6rem 0.9rem; text-align: left; }
+.guide-table thead th { background: var(--jb-cream); }
+.guide-note { font-size: 0.8125rem; color: var(--jb-text-muted); line-height: 1.8; }
+.guide-faq dt { font-weight: 700; color: var(--jb-black); margin-top: 0.75rem; }
+.guide-faq dt::before { content: "Q. "; color: var(--jb-crimson); }
+.guide-faq dd { margin: 0.2rem 0 0; padding-left: 1.4rem; line-height: 1.8; color: var(--jb-text-muted); }
+.guide-cta { background: var(--jb-black); color: #fff; border-radius: 12px; padding: 2.5rem 2rem; text-align: center; margin-top: 2rem; }
+.guide-cta h2 { color: #fff; font-size: 1.4rem; margin: 0 0 0.5rem; }
+.guide-cta > p { opacity: 0.85; margin: 0 0 1.5rem; }
+.guide-cta-row { display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; margin-bottom: 1.5rem; }
+.guide-contact { font-size: 0.8125rem; opacity: 0.8; line-height: 1.9; margin: 0; }
+
+@media (max-width: 44.99em) {
+  .guide-cards { grid-template-columns: 1fr; }
+  .guide-list-cols { columns: 1; }
+}
+
+/* 印刷(PDF保存)時の最適化 */
+@media print {
+  .header, .footer, .bottom-nav, .guide-toolbar, .aside, .overlay { display: none !important; }
+  body { background: #fff; }
+  main { max-width: none; padding: 0; }
+  .guide { max-width: none; padding: 0; }
+  .guide-cover { border-radius: 0; }
+  .guide-section, .guide-cta { break-inside: avoid; }
+  .guide-cover, .guide-cta { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  .guide-cards { grid-template-columns: repeat(3, 1fr); }
 }

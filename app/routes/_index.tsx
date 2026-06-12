@@ -321,6 +321,9 @@ function PublicLanding({
               資料を受け取る（無料）
             </a>
           </div>
+          <p className="lp-hero-guide">
+            <Link to="/service-guide">まずはサービス紹介を見る →</Link>
+          </p>
           <p className="lp-hero-note">
             ※ 会員特別価格はログイン後にのみ表示されます
             <span className="lp-hero-login">
@@ -666,11 +669,30 @@ function PublicLanding({
           <dd>
             運営元BECOS（thebecos.com）のShopify決済・配送インフラをそのまま利用します。お支払いはクレジットカード等に対応しています。
           </dd>
+          <dt>最低何名から導入できますか？</dt>
+          <dd>
+            Sプラン（〜30名）からご利用いただけます。従業員数に応じてプランをお選びください。
+          </dd>
+          <dt>導入・運用に手間はかかりますか？</dt>
+          <dd>
+            メールアドレスを入れて招待するだけ（CSV一括も可）。専任担当は不要で、運用の手間はほとんどかかりません。
+          </dd>
+          <dt>福利厚生費として経費にできますか？</dt>
+          <dd>
+            福利厚生の要件を満たす形で全従業員に機会を提供するため、月額・年額のご利用料金は福利厚生費として計上いただけるものと考えられます。具体的な税務処理は顧問税理士等にご確認ください。
+          </dd>
           <dt>契約期間・解約について教えてください</dt>
           <dd>
             1年契約・自動更新です。詳細は導入のご相談時にご案内いたします。
           </dd>
         </dl>
+        <p className="lp-note">
+          サービスの詳細は{' '}
+          <Link to="/service-guide" className="lp-guide-link">
+            サービス紹介資料
+          </Link>{' '}
+          でご覧いただけます（印刷・PDF保存も可能）。
+        </p>
       </section>
 
       {/* 最終CTA */}
