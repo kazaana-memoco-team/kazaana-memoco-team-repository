@@ -88,20 +88,20 @@ async function loadCriticalData({context, params, request}: Route.LoaderArgs) {
  * Make sure to not throw any errors here, as it will cause the page to 500.
  */
 function loadDeferredData({context, params}: Route.LoaderArgs) {
-  // レビュー記事(スタッフの一押しポイント)は非クリティカル。deferredで取得し
-  // ページ描画をブロックしない。失敗時は空配列。
+  // レビュー記事(スタッフからの一押しポイント)は非クリティカル。deferredで取得し
+  // ページ描画をブロックしない。失敗時は空。
   const handle = params.handle;
-  const reviewImages: Promise<string[]> = handle
+  const review = handle
     ? import('~/lib/reviews')
-        .then(({getReviewImages}) => getReviewImages(context.env, handle))
-        .catch(() => [])
-    : Promise.resolve([]);
+        .then(({getReviewContent}) => getReviewContent(context.env, handle))
+        .catch(() => ({images: [], concierge: null}))
+    : Promise.resolve({images: [], concierge: null});
 
-  return {reviewImages};
+  return {review};
 }
 
 export default function Product() {
-  const {product, inventory, reviewImages} = useLoaderData<typeof loader>();
+  const {product, inventory, review} = useLoaderData<typeof loader>();
 
   // Optimistically selects a variant with given available variant information
   const selectedVariant = useOptimisticVariant(
@@ -172,10 +172,16 @@ export default function Product() {
       />
     </div>
 
-    {/* スタッフの一押しポイント(レビュー記事)— 非クリティカル・全幅 */}
+    {/* スタッフからの一押しポイント(レビュー記事)— 非クリティカル・全幅 */}
     <Suspense fallback={null}>
-      <Await resolve={reviewImages} errorElement={null}>
-        {(imgs) => <ReviewArticle images={imgs ?? []} title={title} />}
+      <Await resolve={review} errorElement={null}>
+        {(r) => (
+          <ReviewArticle
+            images={r?.images ?? []}
+            concierge={r?.concierge ?? null}
+            title={title}
+          />
+        )}
       </Await>
     </Suspense>
     </>

@@ -2208,6 +2208,62 @@ main > div > h1::after {
   background: var(--jb-gold);
   margin: 0.75rem auto 0;
 }
+/* コンシェルジュの吹き出し */
+.review-voice {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+  margin: 0 auto 1.75rem;
+  max-width: 760px;
+}
+.review-voice-avatar {
+  flex: 0 0 auto;
+  margin: 0;
+  text-align: center;
+  width: 72px;
+}
+.review-voice-avatar img {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid var(--jb-gold);
+}
+.review-voice-avatar figcaption {
+  font-size: 0.7rem;
+  color: var(--jb-text-muted);
+  margin-top: 0.3rem;
+  letter-spacing: 0.05em;
+}
+.review-voice-bubble {
+  position: relative;
+  flex: 1 1 auto;
+  background: var(--jb-cream);
+  border: 1px solid var(--jb-border);
+  border-radius: 12px;
+  padding: 1rem 1.25rem;
+}
+.review-voice-bubble::before {
+  /* 左向きの三角(吹き出しのしっぽ) */
+  content: "";
+  position: absolute;
+  top: 22px;
+  left: -9px;
+  width: 16px;
+  height: 16px;
+  background: var(--jb-cream);
+  border-left: 1px solid var(--jb-border);
+  border-bottom: 1px solid var(--jb-border);
+  transform: rotate(45deg);
+}
+.review-voice-bubble p {
+  margin: 0;
+  font-size: 0.95rem;
+  line-height: 1.9;
+  color: var(--jb-text);
+  white-space: pre-wrap;
+}
+
 .review-article-imgs {
   display: flex;
   flex-direction: column;
