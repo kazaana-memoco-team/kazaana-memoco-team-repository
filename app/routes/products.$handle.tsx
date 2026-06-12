@@ -12,6 +12,7 @@ import {ProductPrice} from '~/components/ProductPrice';
 import {ProductGallery} from '~/components/ProductGallery';
 import {ReviewStars} from '~/components/ReviewStars';
 import {ProductForm} from '~/components/ProductForm';
+import {stockStatus, type InventoryStatus} from '~/lib/inventory';
 import {redirectIfHandleIsLocalized} from '~/lib/redirect';
 
 export const meta: Route.MetaFunction = ({data}) => {
@@ -58,11 +59,12 @@ async function loadCriticalData({context, params, request}: Route.LoaderArgs) {
     throw new Error('Expected product handle to be defined');
   }
 
-  const [{product}] = await Promise.all([
+  const {getProductInventory} = await import('~/lib/inventory');
+  const [{product}, inventory] = await Promise.all([
     storefront.query(PRODUCT_QUERY, {
       variables: {handle, selectedOptions: getSelectedProductOptions(request)},
     }),
-    // Add other queries here, so that they are loaded in parallel
+    getProductInventory(context.env, handle),
   ]);
 
   if (!product?.id) {
@@ -74,6 +76,7 @@ async function loadCriticalData({context, params, request}: Route.LoaderArgs) {
 
   return {
     product,
+    inventory,
   };
 }
 
@@ -90,7 +93,7 @@ function loadDeferredData({context, params}: Route.LoaderArgs) {
 }
 
 export default function Product() {
-  const {product} = useLoaderData<typeof loader>();
+  const {product, inventory} = useLoaderData<typeof loader>();
 
   // Optimistically selects a variant with given available variant information
   const selectedVariant = useOptimisticVariant(
@@ -128,6 +131,7 @@ export default function Product() {
           compareAtPrice={selectedVariant?.compareAtPrice}
           handle={product.handle}
         />
+        <StockBadge status={stockStatus(inventory[selectedVariant?.sku ?? ''])} />
         <br />
         <ProductForm
           productOptions={productOptions}
@@ -158,6 +162,37 @@ export default function Product() {
         }}
       />
     </div>
+  );
+}
+
+function StockBadge({status}: {status: InventoryStatus}) {
+  const map: Record<
+    InventoryStatus,
+    {label: string; sub: string; cls: string}
+  > = {
+    in_stock: {
+      label: '在庫あり',
+      sub: 'ご注文後、最短で発送します',
+      cls: 'stock-badge-in',
+    },
+    made_to_order: {
+      label: 'お取り寄せ／受注製作',
+      sub: '納期は別途ご案内します（商品説明の納期をご確認ください）',
+      cls: 'stock-badge-order',
+    },
+    out_of_stock: {
+      label: '在庫切れ',
+      sub: '再入荷までお待ちください',
+      cls: 'stock-badge-out',
+    },
+  };
+  const s = map[status];
+  return (
+    <p className={`stock-badge ${s.cls}`}>
+      <span className="stock-badge-dot" aria-hidden />
+      <span className="stock-badge-label">{s.label}</span>
+      <span className="stock-badge-sub">{s.sub}</span>
+    </p>
   );
 }
 

@@ -1853,3 +1853,22 @@ main > div > h1::after {
   -webkit-text-fill-color: transparent;
 }
 .review-stars-meta { font-size: 0.8125rem; color: var(--jb-text-muted); }
+
+/* 在庫バッジ（PR11） */
+.stock-badge {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 0.4rem 0.6rem;
+  margin: 0.75rem 0 0;
+  font-size: 0.875rem;
+}
+.stock-badge-dot { width: 8px; height: 8px; border-radius: 50%; align-self: center; }
+.stock-badge-label { font-weight: 700; }
+.stock-badge-sub { font-size: 0.8125rem; color: var(--jb-text-muted); }
+.stock-badge-in .stock-badge-dot { background: #16a34a; }
+.stock-badge-in .stock-badge-label { color: #16a34a; }
+.stock-badge-order .stock-badge-dot { background: #d97706; }
+.stock-badge-order .stock-badge-label { color: #b45309; }
+.stock-badge-out .stock-badge-dot { background: #9ca3af; }
+.stock-badge-out .stock-badge-label { color: #6b7280; }
