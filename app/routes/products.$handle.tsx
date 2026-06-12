@@ -127,10 +127,10 @@ export default function Product() {
         <br />
         <br />
         <p>
-          <strong>Description</strong>
+          <strong>商品説明</strong>
         </p>
         <br />
-        <div dangerouslySetInnerHTML={{__html: descriptionHtml}} />
+        <div className="product-description" dangerouslySetInnerHTML={{__html: descriptionHtml}} />
         <br />
       </div>
       <Analytics.ProductView

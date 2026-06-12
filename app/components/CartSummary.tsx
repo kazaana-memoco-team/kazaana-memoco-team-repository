@@ -23,7 +23,7 @@ export function CartSummary({cart, layout}: CartSummaryProps) {
 
   return (
     <div aria-labelledby={summaryId} className={className}>
-      <h4 id={summaryId}>Totals</h4>
+      <h4 id={summaryId}>合計</h4>
       <dl role="group" className="cart-subtotal">
         <dt>通常価格（小計）</dt>
         <dd>
@@ -58,16 +58,36 @@ export function CartSummary({cart, layout}: CartSummaryProps) {
           )}
         </dd>
       </dl>
-      <CartDiscounts
-        discountCodes={cart?.discountCodes}
-        discountsHeadingId={discountsHeadingId}
-        discountCodeInputId={discountCodeInputId}
-      />
-      <CartGiftCard
-        giftCardCodes={cart?.appliedGiftCards}
-        giftCardHeadingId={giftCardHeadingId}
-        giftCardInputId={giftCardInputId}
-      />
+      {/* 割引額の合計（お得感の演出）。会員価格＝割引適用後の合計 */}
+      {cart?.lines?.nodes?.length ? (
+        <dl role="group" className="cart-subtotal cart-savings-total">
+          <dt>割引額の合計</dt>
+          <dd>
+            -
+            <Money
+              data={{
+                amount: String(
+                  cart.lines.nodes.reduce((sum, line: any) => {
+                    const memberPrice = applyDiscount(
+                      line.merchandise.price,
+                      line.merchandise.product?.handle,
+                      rootData?.discountMap,
+                    );
+                    return (
+                      sum +
+                      (Number(line.merchandise.price.amount) -
+                        Number(memberPrice.amount)) *
+                        line.quantity
+                    );
+                  }, 0),
+                ),
+                currencyCode: cart.cost?.subtotalAmount?.currencyCode ?? 'JPY',
+              }}
+            />
+          </dd>
+        </dl>
+      ) : null}
+      {/* 会員制サイトのためディスカウントコード/ギフトカード入力は提供しない */}
       <CartCheckoutActions checkoutUrl={cart?.checkoutUrl} />
     </div>
   );
