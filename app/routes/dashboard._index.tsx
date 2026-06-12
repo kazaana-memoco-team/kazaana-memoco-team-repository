@@ -184,20 +184,25 @@ export default function DashboardPage() {
   );
   const accessRate =
     active.length > 0 ? Math.round((recentActive.length / active.length) * 100) : 0;
+  // 規約v2 第7条: 企業全体の集計値（総注文数・総購入金額・総割引額）は開示可
   const totalOrders = orders.length;
+  const totalPurchase = orders.reduce(
+    (sum, o) => sum + (o.total_member_price ?? 0),
+    0,
+  );
   const totalSavings = orders.reduce(
     (sum, o) =>
       sum + Math.max(0, (o.total_regular_price ?? 0) - (o.total_member_price ?? 0)),
     0,
   );
 
-  // 従業員ごとの利用実績
-  const statsByUser = new Map<string, {count: number; savings: number}>();
+  // 従業員ごとの利用実績（規約v2 第7条: 個人別は「注文回数」のみ。
+  // 個人の購入金額・割引額は企業に開示しないため集計しない）
+  const statsByUser = new Map<string, {count: number}>();
   for (const o of orders) {
     if (!o.user_id) continue;
-    const s = statsByUser.get(o.user_id) ?? {count: 0, savings: 0};
+    const s = statsByUser.get(o.user_id) ?? {count: 0};
     s.count += 1;
-    s.savings += Math.max(0, (o.total_regular_price ?? 0) - (o.total_member_price ?? 0));
     statsByUser.set(o.user_id, s);
   }
 
@@ -226,12 +231,19 @@ export default function DashboardPage() {
           <dt>総注文数</dt>
           <dd>{totalOrders}件</dd>
         </div>
+        <div className="stat-card">
+          <dt>総購入金額</dt>
+          <dd>¥{totalPurchase.toLocaleString('ja-JP')}</dd>
+        </div>
         <div className="stat-card stat-card-highlight">
-          <dt>従業員の合計節約額</dt>
+          <dt>従業員の合計割引額</dt>
           <dd>¥{totalSavings.toLocaleString('ja-JP')}</dd>
         </div>
       </dl>
-      <p className="stat-footnote">※ 過去{RECENT_DAYS}日以内にログインした登録済み会員の割合</p>
+      <p className="stat-footnote">
+        ※ 過去{RECENT_DAYS}日以内にログインした登録済み会員の割合。
+        金額はいずれも貴社全体の合計です（個人ごとの購入金額・商品は表示されません）。
+      </p>
 
       <section className="admin-section">
         <h2>従業員を招待</h2>
@@ -341,7 +353,9 @@ export default function DashboardPage() {
           <table className="admin-table">
             <thead>
               <tr>
-                {['名前', 'メール', '権限', 'ステータス', '最終ログイン', '注文数', '節約額', '操作'].map(
+                {/* 会員利用規約v2 第7条: 個人別は「注文回数」まで。
+                    購入金額・割引額・商品名は企業に開示しない */}
+                {['名前', 'メール', '権限', 'ステータス', '最終ログイン', '注文数', '操作'].map(
                   (h) => (
                     <th key={h}>{h}</th>
                   ),
@@ -371,7 +385,7 @@ function EmployeeRow({
   stats,
 }: {
   emp: Record<string, any>;
-  stats?: {count: number; savings: number};
+  stats?: {count: number};
 }) {
   const fetcher = useFetcher<ActionData>();
   const name =
@@ -389,7 +403,6 @@ function EmployeeRow({
       </td>
       <td>{emp.last_login_at ? new Date(emp.last_login_at).toLocaleDateString('ja-JP') : '-'}</td>
       <td>{stats?.count ?? 0}件</td>
-      <td>{stats?.savings ? `¥${stats.savings.toLocaleString('ja-JP')}` : '-'}</td>
       <td>
         <div style={{display: 'flex', gap: '0.5rem'}}>
           {emp.status === 'pending' && (
