@@ -2015,3 +2015,11 @@ main > div > h1::after {
 /* カート追加ボタンは深紅のCTAのまま・上部に余白で分離 */
 .product-form .add-to-cart,
 .product-form > button[type='submit'] { margin-top: 0.5rem; }
+
+/* 契約情報の管理（PR16） */
+.contract-grid { display: flex; flex-wrap: wrap; gap: 1rem; align-items: flex-end; }
+.contract-grid label { display: flex; flex-direction: column; gap: 0.25rem; font-size: 0.8125rem; font-weight: 600; color: #374151; }
+.contract-grid select,
+.contract-grid input { padding: 0.5rem 0.625rem; border: 1px solid #d1d5db; border-radius: 6px; font-size: 0.9rem; }
+.contract-grid button { background: var(--jb-crimson); color: #fff; border: none; border-radius: 6px; padding: 0.55rem 1.4rem; font-weight: 700; cursor: pointer; }
+.contract-grid button:hover { background: #7d1a17; }

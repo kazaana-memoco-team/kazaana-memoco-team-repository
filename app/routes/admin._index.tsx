@@ -97,6 +97,9 @@ export default function AdminPage() {
           <Link to="/admin/exclusions" style={{fontSize: '0.875rem', color: '#2563eb'}}>
             出品管理 →
           </Link>
+          <Link to="/admin/contracts" style={{fontSize: '0.875rem', color: '#2563eb'}}>
+            契約情報の管理 →
+          </Link>
         </span>
       </div>
 
