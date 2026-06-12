@@ -93,6 +93,11 @@ export default function MypagePage() {
         </p>
       )}
 
+      <div className="mypage-links">
+        <Link to="/mypage/addresses">お届け先の管理</Link>
+        <Link to="/mypage/family">家族アカウント管理</Link>
+      </div>
+
       <h2>注文</h2>
 
       <div className="tab-row" role="tablist">
