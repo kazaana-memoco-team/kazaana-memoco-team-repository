@@ -2023,3 +2023,9 @@ main > div > h1::after {
 .contract-grid input { padding: 0.5rem 0.625rem; border: 1px solid #d1d5db; border-radius: 6px; font-size: 0.9rem; }
 .contract-grid button { background: var(--jb-crimson); color: #fff; border: none; border-radius: 6px; padding: 0.55rem 1.4rem; font-weight: 700; cursor: pointer; }
 .contract-grid button:hover { background: #7d1a17; }
+
+/* 全社平均比較バッジ（PR17・ダッシュボード） */
+.benchmark { margin: 0.35rem 0 0; font-size: 0.75rem; color: var(--jb-text-muted); }
+.benchmark span { font-weight: 700; }
+.benchmark-up span { color: #16a34a; }
+.benchmark-down span { color: #b45309; }
