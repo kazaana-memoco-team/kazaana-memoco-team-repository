@@ -267,9 +267,9 @@ function PublicLanding({
           ぜんぶ会員特別価格。
         </h1>
         <p className="lp-hero-sub">
-          日本全国の工房から届く伝統工芸を、従業員とそのご家族に。
+          ありきたりな福利厚生から、“本物”が届く福利厚生へ。
           <br />
-          BECOSがプロデュースする、法人向け福利厚生サービスです。
+          日本全国の工芸品・日本製品を、従業員とそのご家族に会員特別価格で。
         </p>
         {/* 社会的証明: 累計割引額（一定額を超えたら表示） */}
         {totalSavings >= 100000 && (
@@ -291,6 +291,41 @@ function PublicLanding({
           </Link>
         </div>
         <p className="lp-hero-note">※ 会員特別価格はログイン後にのみ表示されます</p>
+      </section>
+
+      {/* 課題提起（HR・経営者向け） */}
+      <section className="lp-section lp-section-gray lp-problem">
+        <h2>その福利厚生、ちゃんと使われていますか？</h2>
+        <div className="lp-problem-grid">
+          <div className="lp-problem-card">
+            <span className="lp-problem-icon">？</span>
+            <p>
+              ありきたりで、
+              <br />
+              従業員に響いていない
+            </p>
+          </div>
+          <div className="lp-problem-card">
+            <span className="lp-problem-icon">↓</span>
+            <p>
+              物価高で、
+              <br />
+              実質的な手取りが目減り
+            </p>
+          </div>
+          <div className="lp-problem-card">
+            <span className="lp-problem-icon">…</span>
+            <p>
+              採用・定着の
+              <br />
+              決め手に欠ける
+            </p>
+          </div>
+        </div>
+        <p className="lp-problem-solution">
+          <strong>JAPAN BENEFITS</strong> なら、日本の“本物”を会員特別価格で。
+          ご家族まで使える、<strong>記憶に残る福利厚生</strong>です。
+        </p>
       </section>
 
       {/* 3つの価値 */}
@@ -324,8 +359,31 @@ function PublicLanding({
         </div>
       </section>
 
+      {/* 運営元の信頼 */}
+      <section className="lp-section lp-section-gray lp-trust">
+        <h2>運営は、日本全国の工房とつながる工芸品EC「BECOS」</h2>
+        <p className="lp-trust-lead">
+          JAPAN BENEFITS は、伝統工芸のオンラインストア「BECOS」がプロデュース。
+          商品の品質・決済・配送は、すべてBECOSの実績あるインフラをそのまま利用します。
+        </p>
+        <div className="lp-trust-points">
+          <div>
+            <strong>全国の工房と直接取引</strong>
+            <span>有田焼・江戸切子・西陣織・金沢箔ほか</span>
+          </div>
+          <div>
+            <strong>本物の日本製品を多数取扱い</strong>
+            <span>工芸品から、今後はグルメ・体験まで拡大</span>
+          </div>
+          <div>
+            <strong>安心の決済・配送インフラ</strong>
+            <span>Shopify決済／全国配送に対応</span>
+          </div>
+        </div>
+      </section>
+
       {/* ご利用の流れ */}
-      <section className="lp-section lp-section-gray">
+      <section className="lp-section">
         <h2>ご利用の流れ</h2>
         <ol className="lp-steps">
           <li>
