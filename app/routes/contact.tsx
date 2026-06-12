@@ -1,18 +1,25 @@
 import {useState} from 'react';
-import {Form, useActionData, useNavigation, Link} from 'react-router';
+import {Form, useActionData, useNavigation, useLoaderData, Link} from 'react-router';
 import {createSupabaseAdmin} from '~/lib/supabase';
 import type {Route} from './+types/contact';
 
-export const meta: Route.MetaFunction = () => {
+export const meta: Route.MetaFunction = ({data}) => {
+  const isDoc = data?.isDocument;
   return [
-    {title: 'JAPAN BENEFITS｜導入のご相談'},
+    {title: isDoc ? 'JAPAN BENEFITS｜資料請求' : 'JAPAN BENEFITS｜導入のご相談'},
     {
       name: 'description',
       content:
-        '法人向け福利厚生サービス「JAPAN BENEFITS produced by BECOS」の導入相談フォーム。',
+        '法人向け福利厚生サービス「JAPAN BENEFITS produced by BECOS」の導入相談・資料請求フォーム。',
     },
   ];
 };
+
+// ?type=document で「資料請求」モードに切り替える
+export async function loader({request}: Route.LoaderArgs) {
+  const url = new URL(request.url);
+  return {isDocument: url.searchParams.get('type') === 'document'};
+}
 
 type ActionData = {error?: string; ok?: boolean};
 
@@ -29,6 +36,11 @@ export async function action({request, context}: Route.ActionArgs): Promise<Acti
     return {error: 'メールアドレスの形式が正しくありません。'};
   }
 
+  const inquiryType = String(form.get('inquiry_type') ?? '導入相談').trim() || '導入相談';
+  const rawMessage = String(form.get('message') ?? '').trim();
+  const storedMessage =
+    [`【種別】${inquiryType}`, rawMessage].filter(Boolean).join('\n') || null;
+
   const supabase = createSupabaseAdmin(context.env);
   const {error} = await supabase.from('contact_inquiries').insert({
     company_name: companyName || null,
@@ -36,7 +48,7 @@ export async function action({request, context}: Route.ActionArgs): Promise<Acti
     email,
     phone: String(form.get('phone') ?? '').trim() || null,
     employee_count: String(form.get('employee_count') ?? '').trim() || null,
-    message: String(form.get('message') ?? '').trim() || null,
+    message: storedMessage,
   });
 
   if (error) {
@@ -57,8 +69,8 @@ export async function action({request, context}: Route.ActionArgs): Promise<Acti
         body: JSON.stringify({
           from: 'JAPAN BENEFITS <noreply-japan-benefits@thebecos.com>',
           to: ['k-kashimura@kazaana.co.jp'],
-          subject: `【導入相談】${companyName || '個人'} / ${contactName} 様`,
-          text: `会社名: ${companyName}\n担当者: ${contactName}\nメール: ${email}\n電話: ${form.get('phone') ?? ''}\n従業員数: ${form.get('employee_count') ?? ''}\n\n${form.get('message') ?? ''}`,
+          subject: `【${inquiryType}】${companyName || '個人'} / ${contactName} 様`,
+          text: `種別: ${inquiryType}\n会社名: ${companyName}\n担当者: ${contactName}\nメール: ${email}\n電話: ${form.get('phone') ?? ''}\n従業員数: ${form.get('employee_count') ?? ''}\n\n${rawMessage}`,
         }),
       });
     }
@@ -70,6 +82,7 @@ export async function action({request, context}: Route.ActionArgs): Promise<Acti
 }
 
 export default function ContactPage() {
+  const {isDocument} = useLoaderData<typeof loader>();
   const actionData = useActionData<ActionData>();
   const nav = useNavigation();
   const submitting = nav.state === 'submitting';
@@ -81,7 +94,9 @@ export default function ContactPage() {
         <div className="contact-success">
           <h2>送信ありがとうございます</h2>
           <p>
-            導入のご相談を受け付けました。担当者より2営業日以内にご連絡いたします。
+            {isDocument
+              ? '資料請求を受け付けました。担当者より2営業日以内に会社案内をお送りいたします。'
+              : '導入のご相談を受け付けました。担当者より2営業日以内にご連絡いたします。'}
           </p>
           <p>
             <Link to="/">← トップへ戻る</Link>
@@ -94,16 +109,31 @@ export default function ContactPage() {
   return (
     <div className="contact-page">
       <div className="page-heading">
-        <h1>導入のご相談</h1>
+        <h1>{isDocument ? '資料請求（無料）' : '導入のご相談'}</h1>
       </div>
       <p className="contact-intro">
-        「JAPAN BENEFITS produced by BECOS」は、日本全国の伝統工芸・日本製品を
-        従業員とそのご家族に会員特別価格でお届けする法人向け福利厚生サービスです。
-        導入のご相談・お見積り・ファウンディングメンバー（先行30社・初年度50%OFF）の
-        お申し込みは、こちらのフォームよりお気軽にお問い合わせください。
+        {isDocument ? (
+          <>
+            「JAPAN BENEFITS produced by BECOS」の会社案内・料金プランをPDFでお送りします。
+            まだ検討段階の方も、まずは資料だけお気軽にお取り寄せください。
+            ファウンディングメンバー（先行30社・初年度50%OFF）のご案内も同封いたします。
+          </>
+        ) : (
+          <>
+            「JAPAN BENEFITS produced by BECOS」は、日本全国の伝統工芸・日本製品を
+            従業員とそのご家族に会員特別価格でお届けする法人向け福利厚生サービスです。
+            導入のご相談・お見積り・ファウンディングメンバー（先行30社・初年度50%OFF）の
+            お申し込みは、こちらのフォームよりお気軽にお問い合わせください。
+          </>
+        )}
       </p>
 
       <Form method="post" className="contact-form">
+        <input
+          type="hidden"
+          name="inquiry_type"
+          value={isDocument ? '資料請求' : '導入相談'}
+        />
         {actionData?.error && (
           <div className="contact-error">{actionData.error}</div>
         )}
@@ -142,7 +172,7 @@ export default function ContactPage() {
           <textarea id="message" name="message" placeholder="ご質問・ご要望などをご記入ください" />
         </div>
         <button type="submit" className="contact-submit" disabled={submitting}>
-          {submitting ? '送信中…' : '送信する'}
+          {submitting ? '送信中…' : isDocument ? '資料を受け取る' : '送信する'}
         </button>
       </Form>
     </div>

@@ -22,6 +22,21 @@ const CONTACT_SUBJECT = encodeURIComponent(
   'JAPAN BENEFITS 導入のご相談（ファウンディングメンバー）',
 );
 
+/* ------------------------------------------------------------------
+ * 信頼の実績（広告LPの信頼性を上げる数字／メディア掲載）
+ * ▼ 実数を受領したら、この配列に追記するだけで自動でバーが表示されます。
+ *   空のままなら、その項目／セクションは表示されません（虚偽表示の防止）。
+ * ------------------------------------------------------------------ */
+const TRUST_STATS: {value: string; unit?: string; label: string}[] = [
+  // 例: {value: '300', unit: '以上', label: '提携工房'},
+  // 例: {value: '5,000', unit: '点以上', label: '取扱商品'},
+];
+
+// メディア掲載・受賞（空配列ならセクションは表示されません）
+const MEDIA_MENTIONS: string[] = [
+  // 例: '日本経済新聞 掲載', 'グッドデザイン賞 受賞', 'NHK 放送'
+];
+
 export const meta: Route.MetaFunction = ({data}) => {
   return [
     {
@@ -260,38 +275,75 @@ function PublicLanding({
     <div className="lp">
       {/* ヒーロー */}
       <section className="lp-hero">
-        <p className="lp-hero-brand">JAPAN BENEFITS produced by BECOS</p>
-        <h1>
-          日本の本物が、
-          <br />
-          ぜんぶ会員特別価格。
-        </h1>
-        <p className="lp-hero-sub">
-          ありきたりな福利厚生から、“本物”が届く福利厚生へ。
-          <br />
-          日本全国の工芸品・日本製品を、従業員とそのご家族に会員特別価格で。
-        </p>
-        {/* 社会的証明: 累計割引額（一定額を超えたら表示） */}
-        {totalSavings >= 100000 && (
-          <p className="lp-hero-proof">
-            会員はこれまで累計{' '}
-            <strong>¥{totalSavings.toLocaleString('ja-JP')}</strong> 分、
-            おトクにお買い物しています
+        <Suspense fallback={null}>
+          <Await resolve={collections}>
+            {(response) => {
+              const heroImg = response?.collections?.nodes?.find(
+                (c) => c.image,
+              )?.image;
+              return heroImg ? (
+                <div
+                  className="lp-hero-bg"
+                  style={{backgroundImage: `url(${heroImg.url})`}}
+                  aria-hidden="true"
+                />
+              ) : null;
+            }}
+          </Await>
+        </Suspense>
+        <div className="lp-hero-inner">
+          <p className="lp-hero-brand">JAPAN BENEFITS produced by BECOS</p>
+          <h1>
+            日本の本物が、
+            <br />
+            ぜんぶ会員特別価格。
+          </h1>
+          <p className="lp-hero-sub">
+            ありきたりな福利厚生から、“本物”が届く福利厚生へ。
+            <br />
+            日本全国の工芸品・日本製品を、従業員とそのご家族に会員特別価格で。
           </p>
-        )}
-        <div className="lp-cta-row">
-          <a
-            className="lp-btn lp-btn-primary"
-            href="/contact"
-          >
-            導入のご相談（無料）
-          </a>
-          <Link className="lp-btn lp-btn-ghost" to="/login">
-            会員の方はログイン
-          </Link>
+          {/* 社会的証明: 累計割引額（一定額を超えたら表示） */}
+          {totalSavings >= 100000 && (
+            <p className="lp-hero-proof">
+              会員はこれまで累計{' '}
+              <strong>¥{totalSavings.toLocaleString('ja-JP')}</strong> 分、
+              おトクにお買い物しています
+            </p>
+          )}
+          <div className="lp-cta-row">
+            <a className="lp-btn lp-btn-primary" href="/contact">
+              導入のご相談（無料）
+            </a>
+            <a className="lp-btn lp-btn-gold" href="/contact?type=document">
+              資料を受け取る（無料）
+            </a>
+          </div>
+          <p className="lp-hero-note">
+            ※ 会員特別価格はログイン後にのみ表示されます
+            <span className="lp-hero-login">
+              {' '}／ 会員の方は <Link to="/login">こちらからログイン</Link>
+            </span>
+          </p>
         </div>
-        <p className="lp-hero-note">※ 会員特別価格はログイン後にのみ表示されます</p>
       </section>
+
+      {/* 信頼の実績（数字）— 実数が登録されている時のみ表示 */}
+      {TRUST_STATS.length > 0 && (
+        <section className="lp-stats" aria-label="実績">
+          <div className="lp-stats-grid">
+            {TRUST_STATS.map((s) => (
+              <div key={s.label} className="lp-stat">
+                <span className="lp-stat-value">
+                  {s.value}
+                  {s.unit && <span className="lp-stat-unit">{s.unit}</span>}
+                </span>
+                <span className="lp-stat-label">{s.label}</span>
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
 
       {/* 課題提起（HR・経営者向け） */}
       <section className="lp-section lp-section-gray lp-problem">
@@ -359,6 +411,52 @@ function PublicLanding({
         </div>
       </section>
 
+      {/* 比較表（ありがちな福利厚生 vs JAPAN BENEFITS） */}
+      <section className="lp-section lp-compare-section">
+        <h2>ありがちな福利厚生との違い</h2>
+        <p className="lp-plans-lead">
+          ポイント型・カタログ型では届かない“本物の体験”を、ご家族まで。
+        </p>
+        <div className="lp-compare-wrap">
+          <table className="lp-compare">
+            <thead>
+              <tr>
+                <th className="lp-compare-axis" aria-hidden="true" />
+                <th>ありがちな福利厚生</th>
+                <th className="lp-compare-jb">JAPAN BENEFITS</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <th>従業員の満足度</th>
+                <td>ポイントが失効し、使われず形骸化しがち</td>
+                <td className="lp-compare-jb">日本の“本物”が届く、記憶に残る体験</td>
+              </tr>
+              <tr>
+                <th>ご家族の利用</th>
+                <td>本人のみの利用にとどまることが多い</td>
+                <td className="lp-compare-jb">2親等以内のご家族までご利用可能</td>
+              </tr>
+              <tr>
+                <th>提供価格</th>
+                <td>割引率が小さい／対象が限定的</td>
+                <td className="lp-compare-jb">工房直結だからできる、ほぼ原価の特別価格</td>
+              </tr>
+              <tr>
+                <th>導入の手間</th>
+                <td>専用システム・運用が煩雑</td>
+                <td className="lp-compare-jb">メール招待だけ。最短即日で開始</td>
+              </tr>
+              <tr>
+                <th>ブランド体験</th>
+                <td>汎用的で、ありきたり</td>
+                <td className="lp-compare-jb">全国の工房から直送、物語のある逸品</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
       {/* 運営元の信頼 */}
       <section className="lp-section lp-section-gray lp-trust">
         <h2>運営は、日本全国の工房とつながる工芸品EC「BECOS」</h2>
@@ -380,6 +478,16 @@ function PublicLanding({
             <span>Shopify決済／全国配送に対応</span>
           </div>
         </div>
+        {MEDIA_MENTIONS.length > 0 && (
+          <div className="lp-media">
+            <p className="lp-media-label">メディア掲載・受賞</p>
+            <ul className="lp-media-list">
+              {MEDIA_MENTIONS.map((m) => (
+                <li key={m}>{m}</li>
+              ))}
+            </ul>
+          </div>
+        )}
       </section>
 
       {/* ご利用の流れ */}
@@ -551,16 +659,17 @@ function PublicLanding({
       {/* 最終CTA */}
       <section className="lp-final-cta">
         <h2>日本の本物を、あなたの会社の福利厚生に。</h2>
+        <p className="lp-final-cta-sub">
+          ファウンディングメンバーは先行30社限定・初年度50%OFF。
+          まずは資料だけでもお気軽にどうぞ。
+        </p>
         <div className="lp-cta-row">
-          <a
-            className="lp-btn lp-btn-primary"
-            href="/contact"
-          >
+          <a className="lp-btn lp-btn-primary" href="/contact">
             導入のご相談（無料）
           </a>
-          <Link className="lp-btn lp-btn-ghost" to="/login">
-            会員の方はログイン
-          </Link>
+          <a className="lp-btn lp-btn-gold" href="/contact?type=document">
+            資料を受け取る（無料）
+          </a>
         </div>
       </section>
     </div>
