@@ -2,8 +2,9 @@ import type {CartApiQueryFragment} from 'storefrontapi.generated';
 import type {CartLayout} from '~/components/CartMain';
 import {CartForm, Money, type OptimisticCart} from '@shopify/hydrogen';
 import {useEffect, useId, useRef, useState} from 'react';
-import {useFetcher, useRouteLoaderData} from 'react-router';
+import {Link, useFetcher, useRouteLoaderData} from 'react-router';
 import {applyDiscount} from '~/lib/pricing';
+import type {Address} from '~/lib/addresses';
 import type {RootLoader} from '~/root';
 
 type CartSummaryProps = {
@@ -88,18 +89,48 @@ export function CartSummary({cart, layout}: CartSummaryProps) {
         </dl>
       ) : null}
       {/* 会員制サイトのためディスカウントコード/ギフトカード入力は提供しない */}
-      <CartCheckoutActions checkoutUrl={cart?.checkoutUrl} />
+      <CartCheckoutActions
+        checkoutUrl={cart?.checkoutUrl}
+        addresses={rootData?.addresses ?? []}
+      />
     </div>
   );
 }
 
-function CartCheckoutActions({checkoutUrl}: {checkoutUrl?: string}) {
+function CartCheckoutActions({
+  checkoutUrl,
+  addresses,
+}: {
+  checkoutUrl?: string;
+  addresses: Address[];
+}) {
   if (!checkoutUrl) return null;
+
+  const defaultId =
+    addresses.find((a) => a.is_default)?.id ?? addresses[0]?.id ?? '';
 
   return (
     <div>
-      {/* Draft Orders API で会員価格（30%OFF）を確定してチェックアウトへ */}
+      {/* Draft Orders API で会員価格を確定してチェックアウトへ */}
       <form method="post" action="/api/checkout">
+        {addresses.length > 0 && (
+          <div className="checkout-address-select">
+            <label htmlFor="checkout-address">お届け先</label>
+            <select id="checkout-address" name="address_id" defaultValue={defaultId}>
+              {addresses.map((a) => (
+                <option key={a.id} value={a.id}>
+                  {a.recipient_name}
+                  {a.label ? `（${a.label}）` : ''}
+                  {a.is_default ? ' ★' : ''}
+                </option>
+              ))}
+              <option value="">次の画面で入力する</option>
+            </select>
+            <Link to="/mypage/addresses" className="checkout-address-manage">
+              お届け先を管理
+            </Link>
+          </div>
+        )}
         <button type="submit" className="checkout-button">
           会員価格でチェックアウト &rarr;
         </button>

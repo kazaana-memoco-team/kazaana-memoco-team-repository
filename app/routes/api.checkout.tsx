@@ -3,10 +3,20 @@ import type {Route} from './+types/api.checkout';
 import {requireAuth} from '~/lib/auth';
 import {createDraftOrder} from '~/lib/draft-orders';
 import {getDiscountMap} from '~/lib/discounts';
+import {getAddress, toShopifyShippingAddress} from '~/lib/addresses';
 
 export async function action({request, context}: Route.ActionArgs) {
   // 認証チェック
   const user = await requireAuth(request, context.env);
+
+  // 選択された配送先（任意。未選択なら Shopify 決済画面で入力）
+  const formData = await request.formData().catch(() => null);
+  const addressId = formData ? String(formData.get('address_id') ?? '').trim() : '';
+  let shippingAddress;
+  if (addressId) {
+    const addr = await getAddress(context.env, addressId, user.id);
+    if (addr) shippingAddress = toShopifyShippingAddress(addr);
+  }
 
   // カートを取得
   const cart = await context.cart.get();
@@ -30,6 +40,7 @@ export async function action({request, context}: Route.ActionArgs) {
     context.env,
     {userId: user.id},
     discountMap,
+    shippingAddress,
   );
 
   if (!invoiceUrl) {

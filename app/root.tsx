@@ -76,17 +76,23 @@ export async function loader(args: Route.LoaderArgs) {
 
   const {getAuthUser} = await import('~/lib/auth');
   const {getDiscountMap} = await import('~/lib/discounts');
-  const [userRole, discountMap] = await Promise.all([
-    getAuthUser(args.request, env)
-      .then((u) => u?.role ?? null)
-      .catch(() => null),
+  const [authUser, discountMap] = await Promise.all([
+    getAuthUser(args.request, env).catch(() => null),
     getDiscountMap(env),
   ]);
+  const userRole = authUser?.role ?? null;
+
+  // ログイン中の会員の保存済み配送先（チェックアウトの宛先選択に使用）
+  const {getAddresses} = await import('~/lib/addresses');
+  const addresses = authUser
+    ? await getAddresses(env, authUser.id).catch(() => [])
+    : [];
 
   return {
     ...deferredData,
     ...criticalData,
     userRole,
+    addresses,
     discountMap,
     publicStoreDomain: env.PUBLIC_STORE_DOMAIN,
     shop: getShopAnalytics({

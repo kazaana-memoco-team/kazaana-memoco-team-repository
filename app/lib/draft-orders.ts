@@ -37,6 +37,7 @@ export async function createDraftOrder(
   env: Env,
   meta?: {userId?: string; companyName?: string},
   discounts?: DiscountMap,
+  shippingAddress?: Record<string, string>,
 ): Promise<string | null> {
   const domain = env.SHOPIFY_STORE_DOMAIN || 'thebecos.myshopify.com';
 
@@ -77,6 +78,8 @@ export async function createDraftOrder(
           line_items: draftLineItems,
           tags: '福利厚生サイト,kazaana-memoco',
           note: noteLines.join(' / '),
+          // 会員が選択した保存済み配送先を事前入力（Shopify決済画面で編集可）
+          ...(shippingAddress ? {shipping_address: shippingAddress} : {}),
           // 福利厚生は「ほぼ原価＋送料」モデルのため、注文金額にかかわらず
           // 必ず送料を課金する（店舗の「○円以上送料無料」を上書き）。
           // shipping_line を明示すると Draft Order 決済時に店舗の自動送料計算を

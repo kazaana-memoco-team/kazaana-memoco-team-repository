@@ -58,6 +58,26 @@ export interface Database {
         Insert: Database['public']['Tables']['product_discounts']['Row'];
         Update: Partial<Database['public']['Tables']['product_discounts']['Insert']>;
       };
+      addresses: {
+        Row: {
+          id: string;
+          user_id: string;
+          label: string | null;
+          recipient_name: string;
+          postal_code: string | null;
+          prefecture: string | null;
+          city: string | null;
+          address1: string | null;
+          building: string | null;
+          phone: string | null;
+          is_default: boolean;
+          created_at: string;
+        };
+        Insert: Omit<Database['public']['Tables']['addresses']['Row'], 'id' | 'created_at'> & {
+          id?: string;
+        };
+        Update: Partial<Database['public']['Tables']['addresses']['Insert']>;
+      };
       orders: {
         Row: {
           id: string;
