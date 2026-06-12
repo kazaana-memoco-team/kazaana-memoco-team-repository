@@ -22,23 +22,83 @@ export async function loader({request, context}: Route.LoaderArgs) {
 
   if (!user.company_id) throw redirect('/');
 
-  const [{data: company}, {data: employees}, {data: orders}] = await Promise.all([
-    supabase.from('companies').select('*').eq('id', user.company_id).single(),
-    supabase
-      .from('users')
-      .select('id, email, last_name, first_name, role, status, created_at, last_login_at')
-      .eq('company_id', user.company_id)
-      .in('role', ['member', 'company_admin'])
-      .neq('status', 'deleted')
-      .order('created_at', {ascending: false}),
-    supabase
-      .from('orders')
-      .select('user_id, total_regular_price, total_member_price')
-      .eq('company_id', user.company_id)
-      .eq('status', 'paid'),
-  ]);
+  const [{data: company}, {data: employees}, {data: orders}, {data: allUsers}] =
+    await Promise.all([
+      supabase.from('companies').select('*').eq('id', user.company_id).single(),
+      supabase
+        .from('users')
+        .select('id, email, last_name, first_name, role, status, created_at, last_login_at')
+        .eq('company_id', user.company_id)
+        .in('role', ['member', 'company_admin'])
+        .neq('status', 'deleted')
+        .order('created_at', {ascending: false}),
+      supabase
+        .from('orders')
+        .select('user_id, total_regular_price, total_member_price')
+        .eq('company_id', user.company_id)
+        .eq('status', 'paid'),
+      // 全社平均の算出用（company_idのみ・個人特定情報は含めない）
+      supabase
+        .from('users')
+        .select('company_id, status, last_login_at')
+        .in('role', ['member', 'company_admin'])
+        .neq('status', 'deleted'),
+    ]);
 
-  return {user, company, employees: employees ?? [], orders: orders ?? []};
+  const benchmark = computeBenchmark(allUsers ?? []);
+
+  return {
+    user,
+    company,
+    employees: employees ?? [],
+    orders: orders ?? [],
+    benchmark,
+  };
+}
+
+/** 全社平均の登録率・直近アクセス率を算出（企業ごとに率を出して平均） */
+function computeBenchmark(
+  allUsers: Array<{
+    company_id: string | null;
+    status: string;
+    last_login_at: string | null;
+  }>,
+) {
+  const cutoff = Date.now() - RECENT_DAYS * 24 * 60 * 60 * 1000;
+  const byCompany = new Map<
+    string,
+    {total: number; active: number; recentActive: number}
+  >();
+  for (const u of allUsers) {
+    if (!u.company_id) continue;
+    const c = byCompany.get(u.company_id) ?? {
+      total: 0,
+      active: 0,
+      recentActive: 0,
+    };
+    c.total += 1;
+    if (u.status === 'active') {
+      c.active += 1;
+      if (u.last_login_at && new Date(u.last_login_at).getTime() >= cutoff) {
+        c.recentActive += 1;
+      }
+    }
+    byCompany.set(u.company_id, c);
+  }
+  const companies = [...byCompany.values()];
+  const n = companies.length;
+  if (n === 0) return {avgRegistrationRate: 0, avgAccessRate: 0, companies: 0};
+  const avgRegistrationRate = Math.round(
+    companies.reduce((s, c) => s + (c.total ? c.active / c.total : 0), 0) /
+      n *
+      100,
+  );
+  const avgAccessRate = Math.round(
+    companies.reduce((s, c) => s + (c.active ? c.recentActive / c.active : 0), 0) /
+      n *
+      100,
+  );
+  return {avgRegistrationRate, avgAccessRate, companies: n};
 }
 
 export async function action({request, context}: Route.ActionArgs): Promise<ActionData> {
@@ -164,8 +224,28 @@ export async function action({request, context}: Route.ActionArgs): Promise<Acti
   return {error: '不明な操作です'};
 }
 
+/** 全社平均との比較バッジ（チャーン対策の説得材料） */
+function Benchmark({mine, avg}: {mine: number; avg: number}) {
+  if (!avg) return null;
+  const diff = mine - avg;
+  const cls =
+    diff > 0 ? 'benchmark-up' : diff < 0 ? 'benchmark-down' : 'benchmark-even';
+  return (
+    <p className={`benchmark ${cls}`}>
+      全社平均 {avg}%
+      {diff !== 0 && (
+        <span>
+          {' '}
+          （{diff > 0 ? '+' : ''}
+          {diff}pt）
+        </span>
+      )}
+    </p>
+  );
+}
+
 export default function DashboardPage() {
-  const {company, employees, orders} = useLoaderData<typeof loader>();
+  const {company, employees, orders, benchmark} = useLoaderData<typeof loader>();
   const inviteFetcher = useFetcher<ActionData>();
   const csvFetcher = useFetcher<ActionData>();
   const resendAllFetcher = useFetcher<ActionData>();
@@ -220,12 +300,14 @@ export default function DashboardPage() {
         <div className="stat-card">
           <dt>登録率</dt>
           <dd>{registrationRate}%</dd>
+          <Benchmark mine={registrationRate} avg={benchmark.avgRegistrationRate} />
         </div>
         <div className="stat-card">
           <dt>
             直近アクセス率<span className="stat-note">※</span>
           </dt>
           <dd>{accessRate}%</dd>
+          <Benchmark mine={accessRate} avg={benchmark.avgAccessRate} />
         </div>
         <div className="stat-card">
           <dt>総注文数</dt>
