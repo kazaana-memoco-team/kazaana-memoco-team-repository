@@ -218,7 +218,24 @@ export async function action({request, context}: Route.ActionArgs): Promise<Acti
       .eq('id', targetId)
       .eq('company_id', user.company_id);
     if (error) return {error: error.message};
-    return {success: '削除しました'};
+
+    // 退職カスケード: この従業員に紐づく家族アカウントも停止する
+    // （getAuthUser が inactive を弾くため、家族は即座にアクセス不可になる）
+    const {data: deactivated} = await supabase
+      .from('users')
+      .update({status: 'inactive'})
+      .eq('parent_user_id', targetId)
+      .eq('company_id', user.company_id)
+      .neq('status', 'deleted')
+      .select('id');
+    const famCount = deactivated?.length ?? 0;
+
+    return {
+      success:
+        famCount > 0
+          ? `削除しました（紐づくご家族 ${famCount}名のアカウントも停止しました）`
+          : '削除しました',
+    };
   }
 
   return {error: '不明な操作です'};

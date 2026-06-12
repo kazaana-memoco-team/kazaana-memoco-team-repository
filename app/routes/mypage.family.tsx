@@ -5,6 +5,25 @@ import type {Route} from './+types/mypage.family';
 
 type ActionData = {error?: string; success?: string};
 
+// 招待できる続柄（2親等以内）と親等。従業員が選択し、その記録を保管する。
+// 自由入力を廃し選択式にすることで、無関係な他人の招待を抑止する（完全防止はギフトの性質上不可）。
+const RELATIONSHIP_OPTIONS: {label: string; degree: number}[] = [
+  {label: '配偶者', degree: 1},
+  {label: '子', degree: 1},
+  {label: '父・母', degree: 1},
+  {label: '配偶者の父・母', degree: 1},
+  {label: '兄弟・姉妹', degree: 2},
+  {label: '祖父・祖母', degree: 2},
+  {label: '孫', degree: 2},
+  {label: '配偶者の祖父母・兄弟姉妹', degree: 2},
+];
+const RELATIONSHIP_DEGREE: Record<string, number> = Object.fromEntries(
+  RELATIONSHIP_OPTIONS.map((o) => [o.label, o.degree]),
+);
+
+// 1従業員あたりの家族アカウント上限（悪用抑止。2親等以内の現実的な人数に余裕を持たせる）
+const FAMILY_LIMIT_PER_EMPLOYEE = 15;
+
 export async function loader({request, context}: Route.LoaderArgs) {
   const user = await requireRole(request, context.env, ['member', 'company_admin', 'super_admin']);
   const supabase = createSupabaseAdmin(context.env);
@@ -28,10 +47,25 @@ export async function action({request, context}: Route.ActionArgs): Promise<Acti
   if (intent === 'invite') {
     const email = String(formData.get('email') ?? '').trim().toLowerCase();
     const relationship = String(formData.get('relationship') ?? '').trim();
-    const kinshipDegree = Number(formData.get('kinship_degree') ?? 0);
     if (!email) return {error: 'メールアドレスを入力してください'};
-    if (!relationship) return {error: '続柄を入力してください'};
-    if (kinshipDegree < 1 || kinshipDegree > 2) return {error: '2親等以内の家族のみ招待できます'};
+    if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) {
+      return {error: 'メールアドレスの形式が正しくありません'};
+    }
+    // 続柄は選択肢からのみ受け付ける（親等は続柄から自動決定し記録する）
+    const kinshipDegree = RELATIONSHIP_DEGREE[relationship];
+    if (!kinshipDegree) return {error: '続柄を選択してください（2親等以内の家族のみ招待できます）'};
+
+    // 家族人数の上限チェック（悪用抑止）
+    const {count: familyCount} = await supabase
+      .from('users')
+      .select('id', {count: 'exact', head: true})
+      .eq('parent_user_id', user.id)
+      .neq('status', 'deleted');
+    if ((familyCount ?? 0) >= FAMILY_LIMIT_PER_EMPLOYEE) {
+      return {
+        error: `招待できる家族は最大${FAMILY_LIMIT_PER_EMPLOYEE}名までです。超える場合は運営にご相談ください。`,
+      };
+    }
 
     const origin = new URL(request.url).origin;
     const {data: inviteData, error: inviteError} = await supabase.auth.admin.inviteUserByEmail(
@@ -90,8 +124,13 @@ export default function MypageFamilyPage() {
       <div className="page-heading">
         <h1>家族アカウント管理</h1>
       </div>
-      <p style={{color: '#555', marginBottom: '1.5rem'}}>
-        2親等以内の家族を招待すると、独立したアカウントで会員価格での購入が可能になります。
+      <p style={{color: '#555', marginBottom: '0.5rem'}}>
+        2親等以内のご家族を招待すると、独立したアカウントで会員価格での購入が可能になります。
+        招待時に選択いただいた<strong>続柄は記録</strong>されます。
+      </p>
+      <p style={{color: '#a15', fontSize: '0.8125rem', marginBottom: '1.5rem'}}>
+        ※ 会員規約により、ご利用は従業員ご本人と2親等以内のご家族に限られます。対象外の方のご利用が確認された場合、
+        会員規約に基づき割引相当額のご請求等を行う場合があります。
       </p>
 
       <section className="admin-section">
@@ -111,28 +150,23 @@ export default function MypageFamilyPage() {
             />
           </div>
           <div className="form-group">
-            <label htmlFor="relationship">続柄</label>
-            <input
-              id="relationship"
-              type="text"
-              name="relationship"
-              placeholder="例: 配偶者・子・親"
-              required
-              className="form-input"
-              style={{width: 140}}
-            />
-          </div>
-          <div className="form-group">
-            <label htmlFor="kinship_degree">親等</label>
+            <label htmlFor="relationship">続柄（ご本人から見た関係）</label>
             <select
-              id="kinship_degree"
-              name="kinship_degree"
+              id="relationship"
+              name="relationship"
               required
+              defaultValue=""
               className="form-input"
-              style={{width: 90}}
+              style={{width: 200}}
             >
-              <option value="1">1親等</option>
-              <option value="2">2親等</option>
+              <option value="" disabled>
+                選択してください
+              </option>
+              {RELATIONSHIP_OPTIONS.map((o) => (
+                <option key={o.label} value={o.label}>
+                  {o.label}（{o.degree}親等）
+                </option>
+              ))}
             </select>
           </div>
           <button
