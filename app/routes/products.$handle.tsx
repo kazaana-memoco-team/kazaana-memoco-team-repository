@@ -27,6 +27,15 @@ export async function loader(args: Route.LoaderArgs) {
   const {requireAuth} = await import('~/lib/auth');
   await requireAuth(args.request, args.context.env);
 
+  // 出品停止商品は表示しない（管理画面 /admin/exclusions で設定）
+  if (args.params.handle) {
+    const {getExclusionSet} = await import('~/lib/exclusions');
+    const excluded = await getExclusionSet(args.context.env);
+    if (excluded.has(args.params.handle)) {
+      throw new Response('Not Found', {status: 404});
+    }
+  }
+
   // Start fetching non-critical data without blocking time to first byte
   const deferredData = loadDeferredData(args);
 

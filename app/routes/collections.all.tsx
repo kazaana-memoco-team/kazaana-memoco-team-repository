@@ -33,12 +33,15 @@ async function loadCriticalData({context, request}: Route.LoaderArgs) {
     pageBy: 8,
   });
 
-  const [{products}] = await Promise.all([
+  const {getExclusionSet, filterExcluded} = await import('~/lib/exclusions');
+  const [{products}, excluded] = await Promise.all([
     storefront.query(CATALOG_QUERY, {
       variables: {...paginationVariables},
     }),
-    // Add other queries here, so that they are loaded in parallel
+    getExclusionSet(context.env),
   ]);
+  // 出品停止商品を除外（管理画面 /admin/exclusions で設定）
+  products.nodes = filterExcluded(products.nodes, excluded);
   return {products};
 }
 

@@ -242,6 +242,13 @@ async function regularSearch({
     throw new Error('No search data returned from Shopify API');
   }
 
+  // 出品停止商品を検索結果から除外（管理画面 /admin/exclusions で設定）
+  if (items.products?.nodes) {
+    const {getExclusionSet, filterExcluded} = await import('~/lib/exclusions');
+    const excluded = await getExclusionSet(context.env);
+    items.products.nodes = filterExcluded(items.products.nodes, excluded);
+  }
+
   const total = Object.values(items).reduce(
     (acc: number, {nodes}: {nodes: Array<unknown>}) => acc + nodes.length,
     0,
