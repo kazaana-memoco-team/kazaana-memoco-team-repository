@@ -28,14 +28,15 @@ const CONTACT_SUBJECT = encodeURIComponent(
  *   空のままなら、その項目／セクションは表示されません（虚偽表示の防止）。
  * ------------------------------------------------------------------ */
 const TRUST_STATS: {value: string; unit?: string; label: string}[] = [
-  // 例: {value: '300', unit: '以上', label: '提携工房'},
-  // 例: {value: '5,000', unit: '点以上', label: '取扱商品'},
+  {value: '300', unit: '工房', label: '全国の職人と直接取引'},
+  {value: '1万', unit: '点以上', label: '本物の日本製品を取扱い'},
 ];
 
-// メディア掲載・受賞（空配列ならセクションは表示されません）
-const MEDIA_MENTIONS: string[] = [
-  // 例: '日本経済新聞 掲載', 'グッドデザイン賞 受賞', 'NHK 放送'
-];
+// メディア掲載: 公式のロゴ帯画像があればそれを表示（無ければテキストの MEDIA_MENTIONS）
+const MEDIA_IMAGE_URL =
+  'https://cdn.shopify.com/s/files/1/0304/7001/3064/files/media-list-02.png?v=1771414422';
+// 画像が無い場合のフォールバック（空配列なら非表示）
+const MEDIA_MENTIONS: string[] = [];
 
 export const meta: Route.MetaFunction = ({data}) => {
   return [
@@ -479,14 +480,25 @@ function PublicLanding({
             <span>Shopify決済／全国配送に対応</span>
           </div>
         </div>
-        {MEDIA_MENTIONS.length > 0 && (
+        {(MEDIA_IMAGE_URL || MEDIA_MENTIONS.length > 0) && (
           <div className="lp-media">
-            <p className="lp-media-label">メディア掲載・受賞</p>
-            <ul className="lp-media-list">
-              {MEDIA_MENTIONS.map((m) => (
-                <li key={m}>{m}</li>
-              ))}
-            </ul>
+            {MEDIA_IMAGE_URL ? (
+              <img
+                className="lp-media-img"
+                src={MEDIA_IMAGE_URL}
+                alt="メディア掲載: 日本経済新聞・テレビ東京・JTB・西日本新聞社・地球の歩き方 ほか"
+                loading="lazy"
+              />
+            ) : (
+              <>
+                <p className="lp-media-label">メディア掲載・受賞</p>
+                <ul className="lp-media-list">
+                  {MEDIA_MENTIONS.map((m) => (
+                    <li key={m}>{m}</li>
+                  ))}
+                </ul>
+              </>
+            )}
           </div>
         )}
       </section>

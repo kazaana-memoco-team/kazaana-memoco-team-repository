@@ -1476,7 +1476,11 @@ h1, h2, h3 {
 }
 
 main {
+  width: 100%;
   max-width: 1200px;
+  /* body は flex(column) のため margin:auto では中央化されない。
+     align-self:center で確実に水平中央に置く（広い画面で左寄りになる回帰の修正）。 */
+  align-self: center;
   margin: 0 auto;
   padding: 1.5rem 1rem 3rem;
   box-sizing: border-box;
@@ -1804,6 +1808,18 @@ main > div > h1::after {
 
 /* メディア掲載・受賞（実数登録時のみ表示） */
 .lp-media { margin-top: 2rem; text-align: center; }
+.lp-media-img {
+  display: block;
+  width: 100%;
+  max-width: 680px;
+  height: auto;
+  margin: 0 auto;
+  background: #fff;
+  border: 1px solid var(--jb-border);
+  border-radius: 12px;
+  padding: 1.25rem;
+  box-sizing: border-box;
+}
 .lp-media-label { font-size: 0.75rem; letter-spacing: 0.2em; color: var(--jb-text-muted); margin: 0 0 0.75rem; }
 .lp-media-list { list-style: none; display: flex; flex-wrap: wrap; justify-content: center; gap: 0.6rem 1rem; padding: 0; margin: 0; }
 .lp-media-list li { border: 1px solid var(--jb-border); border-radius: 999px; padding: 0.35rem 1rem; font-size: 0.82rem; color: var(--jb-text); background: #fff; }
