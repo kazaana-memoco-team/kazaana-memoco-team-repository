@@ -1745,9 +1745,14 @@ main > div > h1::after {
   .product-description .voice img { width: 64px; height: 64px; }
 }
 
-/* ヒーロー見出しの可読性修正（PR6のh1黒指定が暗背景に溶けた回帰の修正） */
+/* 暗背景セクションの見出し可読性修正
+   （グローバルの h1,h2,h3{color:var(--jb-black)} が黒背景バナーの見出しまで黒くする回帰の修正） */
 .lp-hero h1,
-.member-hero h1 { color: #fff; }
+.member-hero h1,
+.lp-founding h2,
+.lp-founding h3,
+.lp-final-cta h2,
+.lp-final-cta h3 { color: #fff; }
 .lp-hero h1 { letter-spacing: 0.06em; }
 .lp-hero-brand { color: var(--jb-gold-light); opacity: 0.9; }
 
