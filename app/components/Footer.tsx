@@ -38,6 +38,13 @@ export function Footer({
                   thebecos.com（本家サイト）↗
                 </a>
               </div>
+              {/* 特商法表示は購入前に閲覧できる必要があるため、規約類をフッターに常設 */}
+              <div className="footer-links footer-links-legal">
+                <Link to="/policies/tokushoho">特定商取引法に基づく表示</Link>
+                <Link to="/policies/terms">会員利用規約</Link>
+                <Link to="/policies/privacy">プライバシーポリシー</Link>
+                <Link to="/contact">導入のご相談</Link>
+              </div>
               <div className="footer-meta">
                 © {new Date().getFullYear()} kazaana × BECOS — Powered by
                 Shopify Hydrogen / Oxygen
