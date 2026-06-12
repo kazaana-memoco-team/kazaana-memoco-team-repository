@@ -10,6 +10,7 @@ import {
 } from '@shopify/hydrogen';
 import {ProductPrice} from '~/components/ProductPrice';
 import {ProductGallery} from '~/components/ProductGallery';
+import {ReviewStars} from '~/components/ReviewStars';
 import {ProductForm} from '~/components/ProductForm';
 import {redirectIfHandleIsLocalized} from '~/lib/redirect';
 
@@ -118,6 +119,10 @@ export default function Product() {
       />
       <div className="product-main">
         <h1>{title}</h1>
+        <ReviewStars
+          ratingValue={product.rating?.value}
+          ratingCount={product.ratingCount?.value}
+        />
         <ProductPrice
           price={selectedVariant?.price}
           compareAtPrice={selectedVariant?.compareAtPrice}
@@ -210,6 +215,12 @@ const PRODUCT_FRAGMENT = `#graphql
         width
         height
       }
+    }
+    rating: metafield(namespace: "reviews", key: "rating") {
+      value
+    }
+    ratingCount: metafield(namespace: "reviews", key: "rating_count") {
+      value
     }
     encodedVariantExistence
     encodedVariantAvailability
