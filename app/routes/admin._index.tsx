@@ -100,6 +100,9 @@ export default function AdminPage() {
           <Link to="/admin/contracts" style={{fontSize: '0.875rem', color: '#2563eb'}}>
             契約情報の管理 →
           </Link>
+          <Link to="/admin/abuse-watch" style={{fontSize: '0.875rem', color: '#2563eb'}}>
+            不正利用ウォッチ →
+          </Link>
         </span>
       </div>
 
