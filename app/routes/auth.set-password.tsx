@@ -1,5 +1,5 @@
 import {redirect} from 'react-router';
-import {Form, useActionData} from 'react-router';
+import {Form, Link, useActionData} from 'react-router';
 import {requireAuth} from '~/lib/auth';
 import {createSupabaseAdmin} from '~/lib/supabase';
 import type {Route} from './+types/auth.set-password';
@@ -19,6 +19,7 @@ export async function action({
   const formData = await request.formData();
   const password = String(formData.get('password') ?? '');
   const confirm = String(formData.get('confirm') ?? '');
+  const agree = formData.get('agree') === 'on';
 
   if (password.length < 8) {
     return {error: 'パスワードは8文字以上で入力してください'};
@@ -26,11 +27,20 @@ export async function action({
   if (password !== confirm) {
     return {error: 'パスワードが一致しません'};
   }
+  if (!agree) {
+    return {error: '会員利用規約とプライバシーポリシーへの同意が必要です'};
+  }
 
   const supabase = createSupabaseAdmin(context.env);
   const {error} = await supabase.auth.admin.updateUserById(user.id, {password});
 
   if (error) return {error: error.message};
+
+  // 規約・プライバシーポリシーへの同意を記録（証跡）
+  await supabase
+    .from('users')
+    .update({terms_agreed_at: new Date().toISOString()})
+    .eq('id', user.id);
 
   return redirect('/mypage');
 }
@@ -115,6 +125,39 @@ export default function SetPasswordPage() {
             }}
           />
         </div>
+
+        <label
+          style={{
+            display: 'flex',
+            alignItems: 'flex-start',
+            gap: '0.5rem',
+            fontSize: '0.8125rem',
+            lineHeight: 1.7,
+            color: '#374151',
+            marginBottom: '1.25rem',
+          }}
+        >
+          <input
+            type="checkbox"
+            name="agree"
+            required
+            style={{marginTop: '0.2rem', flexShrink: 0}}
+          />
+          <span>
+            <Link to="/policies/terms" target="_blank" style={{color: '#99201c'}}>
+              会員利用規約
+            </Link>
+            および
+            <Link
+              to="/policies/privacy"
+              target="_blank"
+              style={{color: '#99201c'}}
+            >
+              プライバシーポリシー
+            </Link>
+            に同意します
+          </span>
+        </label>
 
         {data && 'error' in data && data.error && (
           <p
