@@ -99,6 +99,14 @@ export default function ContactPage() {
               : '導入のご相談を受け付けました。担当者より2営業日以内にご連絡いたします。'}
           </p>
           <p>
+            お待ちいただかなくても、いますぐサービス紹介資料をご覧いただけます。
+          </p>
+          <p>
+            <a className="lp-btn lp-btn-gold" href="/service-guide">
+              いますぐ資料を見る →
+            </a>
+          </p>
+          <p>
             <Link to="/">← トップへ戻る</Link>
           </p>
         </div>
