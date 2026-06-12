@@ -1962,3 +1962,56 @@ main > div > h1::after {
   margin: 0 0 0.75rem;
 }
 .lp-founding-slots strong { font-size: 1rem; }
+
+/* ============================================================
+   バリエーション選択（PR15: カートボタンと明確に区別・選択中を明示）
+   PR6の .product-form button(深紅) を上書きするため指定度を上げる
+   ============================================================ */
+.product-options { margin-bottom: 1.25rem; }
+.product-options-label {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+  font-size: 0.9rem;
+  font-weight: 700;
+  margin: 0 0 0.6rem;
+  color: var(--jb-text);
+}
+.product-options-selected { font-weight: 600; font-size: 0.8125rem; color: var(--jb-crimson); }
+.product-options-grid { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+.product-options-grid .product-options-item {
+  background: #fff;
+  color: var(--jb-text);
+  border: 1.5px solid var(--jb-border);
+  border-radius: 8px;
+  padding: 0.5rem 1.1rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+  letter-spacing: 0;
+  cursor: pointer;
+  transition: border-color 0.15s ease, background 0.15s ease, color 0.15s ease;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+.product-options-grid .product-options-item:hover { border-color: var(--jb-gold); }
+.product-options-grid .product-options-item.is-selected {
+  border-color: var(--jb-crimson);
+  background: rgba(153, 32, 28, 0.07);
+  color: var(--jb-crimson);
+}
+.product-options-grid .product-options-item.is-selected::before {
+  content: '✓';
+  font-size: 0.85em;
+  font-weight: 700;
+}
+.product-options-grid .product-options-item.is-unavailable {
+  opacity: 0.35;
+  text-decoration: line-through;
+  cursor: not-allowed;
+}
+/* カート追加ボタンは深紅のCTAのまま・上部に余白で分離 */
+.product-form .add-to-cart,
+.product-form > button[type='submit'] { margin-top: 0.5rem; }
