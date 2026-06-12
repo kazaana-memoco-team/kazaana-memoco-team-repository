@@ -90,9 +90,14 @@ export default function AdminPage() {
     <div className="admin-page">
       <div className="page-heading">
         <h1>kazaana 運営管理</h1>
-        <Link to="/admin/discounts" style={{fontSize: '0.875rem', color: '#2563eb'}}>
-          商品別割引率の設定 →
-        </Link>
+        <span style={{display: 'flex', gap: '1rem'}}>
+          <Link to="/admin/discounts" style={{fontSize: '0.875rem', color: '#2563eb'}}>
+            商品別割引率の設定 →
+          </Link>
+          <Link to="/admin/exclusions" style={{fontSize: '0.875rem', color: '#2563eb'}}>
+            出品管理 →
+          </Link>
+        </span>
       </div>
 
       <dl className="stat-cards">

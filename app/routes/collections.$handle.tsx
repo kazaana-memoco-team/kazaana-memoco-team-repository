@@ -54,6 +54,14 @@ async function loadCriticalData({context, params, request}: Route.LoaderArgs) {
   // The API handle might be localized, so redirect to the localized handle
   redirectIfHandleIsLocalized(request, {handle, data: collection});
 
+  // 出品停止商品を除外（管理画面 /admin/exclusions で設定）
+  const {getExclusionSet, filterExcluded} = await import('~/lib/exclusions');
+  const excluded = await getExclusionSet(context.env);
+  collection.products.nodes = filterExcluded(
+    collection.products.nodes,
+    excluded,
+  );
+
   return {
     collection,
   };
