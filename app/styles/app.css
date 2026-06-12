@@ -1840,3 +1840,16 @@ main > div > h1::after {
 }
 .contact-success h2 { color: #16a34a; margin-top: 0; }
 .contact-error { background: #fef2f2; color: #b91c1c; border: 1px solid #fecaca; border-radius: 8px; padding: 0.625rem 0.75rem; font-size: 0.875rem; margin-bottom: 1rem; }
+
+/* レビュー星評価（Judge.me由来・PR10） */
+.review-stars { display: flex; align-items: center; gap: 0.5rem; margin: 0 0 0.75rem; }
+.review-stars-icons { display: inline-flex; letter-spacing: 0.05em; }
+.review-star { color: #d9d4c8; font-size: 1rem; line-height: 1; }
+.review-star.is-filled { color: var(--jb-gold); }
+.review-star.is-half {
+  background: linear-gradient(90deg, var(--jb-gold) 50%, #d9d4c8 50%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+.review-stars-meta { font-size: 0.8125rem; color: var(--jb-text-muted); }
