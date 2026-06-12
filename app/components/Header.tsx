@@ -174,7 +174,7 @@ function SearchToggle() {
   const {open} = useAside();
   return (
     <button className="reset" onClick={() => open('search')}>
-      Search
+      検索
     </button>
   );
 }
@@ -197,7 +197,7 @@ function CartBadge({count}: {count: number}) {
         } as CartViewPayload);
       }}
     >
-      Cart <span aria-label={`(items: ${count})`}>{count}</span>
+      カート <span aria-label={`(items: ${count})`}>{count}</span>
     </a>
   );
 }
