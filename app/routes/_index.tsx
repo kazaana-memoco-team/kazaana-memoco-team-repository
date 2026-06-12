@@ -278,9 +278,10 @@ function PublicLanding({
         <Suspense fallback={null}>
           <Await resolve={collections}>
             {(response) => {
-              const heroImg = response?.collections?.nodes?.find(
-                (c) => c.image,
-              )?.image;
+              // 作成中・テストコレクションの画像をヒーローに出さない
+              const heroImg = visibleCollections(
+                response?.collections?.nodes ?? [],
+              ).find((c) => c.image)?.image;
               return heroImg ? (
                 <div
                   className="lp-hero-bg"
