@@ -388,7 +388,7 @@ function PublicLanding({
         <div className="lp-features">
           <div className="lp-feature">
             <div className="lp-feature-icon">特別価格</div>
-            <h3>ほぼ原価の会員特別価格</h3>
+            <h3>ここだけの会員特別価格</h3>
             <p>
               全国の職人と直接つながるBECOSだから実現できる、会員だけの特別価格。
               一般には公開されない価格で、本物の工芸品をお求めいただけます。
@@ -404,7 +404,7 @@ function PublicLanding({
           </div>
           <div className="lp-feature">
             <div className="lp-feature-icon">日本の本物</div>
-            <h3>全国の工房から、直送</h3>
+            <h3>作り手から、産地直送の心で</h3>
             <p>
               有田焼、江戸切子、西陣織、金沢箔——日本全国の伝統工芸が対象。
               今後は日本のこだわりグルメ・体験へも拡大予定です。
@@ -442,7 +442,7 @@ function PublicLanding({
               <tr>
                 <th>提供価格</th>
                 <td>割引率が小さい／対象が限定的</td>
-                <td className="lp-compare-jb">工房直結だからできる、ほぼ原価の特別価格</td>
+                <td className="lp-compare-jb">作り手とつながるBECOSだからできる、会員だけの特別価格</td>
               </tr>
               <tr>
                 <th>導入の手間</th>
@@ -452,7 +452,7 @@ function PublicLanding({
               <tr>
                 <th>ブランド体験</th>
                 <td>汎用的で、ありきたり</td>
-                <td className="lp-compare-jb">全国の工房から直送、物語のある逸品</td>
+                <td className="lp-compare-jb">産地直送、物語のある逸品</td>
               </tr>
             </tbody>
           </table>
@@ -515,7 +515,9 @@ function PublicLanding({
           <li>
             <span className="lp-step-num">2</span>
             <h3>従業員を招待</h3>
-            <p>管理画面からメールアドレスを入れるだけ。ご家族の招待も簡単です。</p>
+            <p>
+              管理画面から従業員のメールアドレスを入れるだけ。ご家族は、従業員ご本人からマイページで招待できます。
+            </p>
           </li>
           <li>
             <span className="lp-step-num">3</span>
@@ -622,7 +624,9 @@ function PublicLanding({
           </div>
         </div>
         <p className="lp-note">
-          年間一括前払い（請求書払い）。月払いオプション・入会金についてはお問い合わせください。
+          入会金 50,000円（税別）／年間一括前払い（請求書払い）。月払いオプションについてはお問い合わせください。
+          <br />
+          ファウンディングメンバー（先行30社）は入会金無料。
         </p>
         <div className="lp-founding">
           <h3>ファウンディングメンバー募集中</h3>
