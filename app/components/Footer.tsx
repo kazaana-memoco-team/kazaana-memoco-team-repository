@@ -23,11 +23,13 @@ export function Footer({
               <div className="footer-tagline">
                 produced by BECOS ― 日本の本物を会員特別価格でお届けする、法人向け福利厚生サービス
               </div>
+              {/* 本サービスは招待制(Supabase認証)のため、Shopify顧客アカウント系の
+                  リンク(ログイン/アカウントを作成 → /account)は表示しない */}
               <div className="footer-links">
                 <Link to="/">ホーム</Link>
                 <Link to="/collections">カテゴリ</Link>
                 <Link to="/collections/all">商品一覧</Link>
-                <Link to="/account">アカウント</Link>
+                <Link to="/mypage">マイページ</Link>
                 <a
                   href="https://www.thebecos.com/"
                   target="_blank"
@@ -36,13 +38,6 @@ export function Footer({
                   thebecos.com（本家サイト）↗
                 </a>
               </div>
-              {footer?.menu && header.shop.primaryDomain?.url && (
-                <FooterMenu
-                  menu={footer.menu}
-                  primaryDomainUrl={header.shop.primaryDomain.url}
-                  publicStoreDomain={publicStoreDomain}
-                />
-              )}
               <div className="footer-meta">
                 © {new Date().getFullYear()} kazaana × BECOS — Powered by
                 Shopify Hydrogen / Oxygen
