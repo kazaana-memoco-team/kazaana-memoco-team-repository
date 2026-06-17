@@ -38,6 +38,20 @@ const MEDIA_IMAGE_URL =
 // 画像が無い場合のフォールバック（空配列なら非表示）
 const MEDIA_MENTIONS: string[] = [];
 
+/* ------------------------------------------------------------------
+ * 顧客の声（導入企業の声）
+ * ▼ 実際の声を受領したら、この配列に追記すると「導入企業の声」セクションが表示されます。
+ *   空のままなら非表示（広告LPに架空の声を出さないため）。
+ *   company は「業種・従業員規模」を添えると説得力が増します。
+ * ------------------------------------------------------------------ */
+const CUSTOMER_VOICES: {quote: string; person: string; company: string}[] = [
+  // 例: {
+  //   quote: '社員はもちろん、その家族にも喜ばれています。ありきたりな福利厚生から脱却できました。',
+  //   person: '人事部 ◯◯ 様',
+  //   company: '株式会社◯◯（製造業・従業員80名）',
+  // },
+];
+
 export const meta: Route.MetaFunction = ({data}) => {
   return [
     {
@@ -591,6 +605,24 @@ function PublicLanding({
           </div>
         </div>
       </section>
+
+      {/* 導入企業の声（実データ登録時のみ表示） */}
+      {CUSTOMER_VOICES.length > 0 && (
+        <section className="lp-section lp-voices">
+          <h2>導入企業の声</h2>
+          <div className="lp-voices-grid">
+            {CUSTOMER_VOICES.map((v) => (
+              <figure key={v.quote} className="lp-voice-card">
+                <blockquote>{v.quote}</blockquote>
+                <figcaption>
+                  <span className="lp-voice-person">{v.person}</span>
+                  <span className="lp-voice-company">{v.company}</span>
+                </figcaption>
+              </figure>
+            ))}
+          </div>
+        </section>
+      )}
 
       {/* 料金プラン */}
       <section className="lp-section" id="plans">
