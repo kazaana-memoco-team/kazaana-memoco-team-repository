@@ -18,15 +18,24 @@ export default function ServiceGuidePage() {
         <Link to="/" className="guide-back">
           ← トップへ
         </Link>
-        <button
-          type="button"
-          className="guide-print"
-          onClick={() => {
-            if (typeof window !== 'undefined') window.print();
-          }}
-        >
-          印刷 / PDFで保存
-        </button>
+        <span className="guide-toolbar-actions">
+          <a
+            className="guide-print"
+            href="/japan-benefits-service-guide.pdf"
+            download
+          >
+            PDFをダウンロード
+          </a>
+          <button
+            type="button"
+            className="guide-print guide-print-ghost"
+            onClick={() => {
+              if (typeof window !== 'undefined') window.print();
+            }}
+          >
+            印刷
+          </button>
+        </span>
       </div>
 
       {/* 表紙 */}
