@@ -2409,10 +2409,13 @@ main > div > h1::after {
 .guide { max-width: 800px; margin: 0 auto; padding: 0 1rem 3rem; color: var(--jb-text); }
 .guide-toolbar { display: flex; justify-content: space-between; align-items: center; padding: 1rem 0; }
 .guide-back { font-size: 0.875rem; color: var(--jb-text-muted); }
+.guide-toolbar-actions { display: flex; gap: 0.5rem; align-items: center; }
 .guide-print {
   border: 1px solid var(--jb-gold); background: var(--jb-gold); color: #1a1a1a;
   font-weight: 700; font-size: 0.875rem; border-radius: 6px; padding: 0.5rem 1.1rem; cursor: pointer;
+  text-decoration: none; display: inline-block;
 }
+.guide-print-ghost { background: transparent; color: var(--jb-black); }
 .guide-cover {
   background: var(--jb-black); color: #fff; border-radius: 12px;
   padding: 3.5rem 2rem; text-align: center; margin-bottom: 2rem;
