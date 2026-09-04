@@ -9,3 +9,19 @@ node_modules
 .shopify
 .react-router
 tsconfig.tsbuildinfo
+
+# --- secrets: 事故防止のため追加（2026-09-04）---
+# .env 系は example/template を除き一切コミットしない
+.env
+.env.*
+!.env.example
+!.env.template
+!.env.sample
+# 認証情報ファイル
+*_service_account.json
+*_oauth_client.json
+.credentials.json
+.secrets/
+credentials/
+*.pem
+*.p12
